@@ -8,7 +8,7 @@
 
 </div>
 
-# Codebase Review Action Planner (C.R.A.P.)
+# Codebase Review Action Planner, or C.R.A.P. for short
 
 Standalone local review tool for inspecting web apps and codebases, selecting visible regions, adding annotations, and saving a review folder with Markdown, screenshots, payload JSON, and an optional Cursor SDK investigation report.
 
