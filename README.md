@@ -1,3 +1,5 @@
+# It's your C.R.A.P. Review it. Fix it. Ship it. Powered by Cursor SDK.
+
 # Codebase Review Action Planner (C.R.A.P.)
 
 Standalone local review tool for inspecting web apps and codebases, selecting visible regions, adding annotations, and saving a review folder with Markdown, screenshots, payload JSON, and an optional Cursor SDK investigation report.
