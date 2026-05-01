@@ -448,6 +448,45 @@
       text-transform: uppercase;
     }
 
+    .cursor-agent-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid var(--warn-border);
+      border-radius: 8px;
+      background: var(--warn-bg);
+      color: var(--warn-text);
+      font-family: var(--ttg-font-mono);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .cursor-agent-status::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: currentColor;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    .cursor-agent-status.enabled {
+      border-color: var(--success-border);
+      background: var(--success-bg);
+      color: var(--success-text);
+    }
+
+    .cursor-agent-status.disabled {
+      border-color: color-mix(in oklab, var(--danger) 50%, var(--ui-border));
+      background: color-mix(in oklab, var(--danger) 12%, var(--background));
+      color: var(--danger);
+    }
+
     .site-field {
       grid-column: 1 / -1;
     }
@@ -994,6 +1033,15 @@
         <p class="subtitle">This C.R.A.P. will help you lock a site, review it in the drawer, capture the pieces that matter, and save annotated evidence in one action-ready folder.</p>
       </div>
       <div class="actions">
+        <div
+          class="cursor-agent-status disabled"
+          id="cursorAgentStatus"
+          role="status"
+          aria-live="polite"
+          title="Checking Cursor Agent status..."
+        >
+          Cursor Agents: Checking
+        </div>
         <div class="action-group primary-actions" aria-label="Primary actions">
           <button type="button" id="openAppDrawer" class="primary">Open App Drawer</button>
           <button type="button" id="saveReview" class="primary">Save This C.R.A.P.</button>
@@ -1192,6 +1240,7 @@
     );
     const SAVE_ENDPOINT = String(CRAP_CONFIG.saveEndpoint ?? window.CRAP_SAVE_ENDPOINT ?? "/api/reviews");
     const SAVE_AUTH_TOKEN = String(CRAP_CONFIG.authToken ?? window.CRAP_AUTH_TOKEN ?? "");
+    const STATUS_ENDPOINT = String(CRAP_CONFIG.statusEndpoint ?? window.CRAP_STATUS_ENDPOINT ?? "/health");
     const MAX_SCREENSHOTS_PER_SECTION = 4;
 
     let sections = [];
@@ -1222,6 +1271,74 @@
       toast.textContent = message;
       toast.classList.add("show");
       setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    function setCursorAgentStatus(enabled, label, details = "") {
+      const badge = document.getElementById("cursorAgentStatus");
+      if (!badge) return;
+      badge.classList.toggle("enabled", Boolean(enabled));
+      badge.classList.toggle("disabled", !enabled);
+      badge.textContent = label;
+      badge.title = details || label;
+      badge.setAttribute("aria-label", `${label}${details ? `. ${details}` : ""}`);
+    }
+
+    function cursorStatusHeaders() {
+      const headers = {};
+      if (SAVE_AUTH_TOKEN) headers.Authorization = `Bearer ${SAVE_AUTH_TOKEN}`;
+      return headers;
+    }
+
+    function cursorStatusDetails(body) {
+      const details = [];
+      if (body.cursor_model) details.push(`Model: ${body.cursor_model}`);
+      if (body.cursor_agent_reason) details.push(body.cursor_agent_reason);
+      if (body.ai_report_enabled === false) details.push("AI reports disabled");
+      if (body.cursor_sdk_configured === false) details.push("Missing CURSOR_API_KEY");
+      if (body.cursor_sdk_available === false) details.push("@cursor/sdk missing");
+      if (body.cursor_report_helper_available === false) details.push("report helper missing");
+      return [...new Set(details)].join(" · ");
+    }
+
+    async function refreshCursorAgentStatus() {
+      try {
+        const response = await fetch(STATUS_ENDPOINT, {
+          headers: cursorStatusHeaders(),
+          cache: "no-store",
+        });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(body.message || `Status failed (${response.status})`);
+        const enabled = Boolean(body.cursor_agent_enabled ?? (body.ai_report_enabled && body.cursor_sdk_configured && body.cursor_sdk_available !== false));
+        setCursorAgentStatus(
+          enabled,
+          enabled ? "Cursor Agents: Enabled" : "Cursor Agents: Not Ready",
+          cursorStatusDetails(body),
+        );
+      } catch (error) {
+        setCursorAgentStatus(
+          false,
+          "Cursor Agents: Not Ready",
+          error instanceof Error ? error.message : "Unable to verify Cursor Agent status",
+        );
+      }
+    }
+
+    function updateCursorAgentStatusFromSave(body) {
+      if (!body || typeof body !== "object" || !("ai_report_mode" in body)) return;
+      if (body.ai_report_mode === "cursor-sdk") {
+        const details = [
+          body.ai_report_model ? `Model: ${body.ai_report_model}` : "",
+          body.ai_report_run_id ? `Run: ${body.ai_report_run_id}` : "",
+          body.ai_report_image_mode ? `Images: ${body.ai_report_image_mode}` : "",
+        ].filter(Boolean).join(" · ");
+        setCursorAgentStatus(true, "Cursor Agents: Working", details || "Last save used Cursor SDK");
+        return;
+      }
+      setCursorAgentStatus(
+        false,
+        "Cursor Agents: Fallback",
+        body.ai_report_error || `Last save used ${body.ai_report_mode || "fallback"} report mode`,
+      );
     }
 
     function applyTheme(theme) {
@@ -2327,6 +2444,7 @@
         const promptNote = promptTarget ? ` Cursor prompt: ${promptTarget}.` : "";
         status.textContent = `Saved this C.R.A.P. with ${body.screenshots} screenshot(s) to ${folderTarget}. Manifest: ${manifestTarget}.${aiReport}${promptNote}`;
         setCursorPrompt(body.cursor_prompt_text || "");
+        updateCursorAgentStatusFromSave(body);
         showToast("This C.R.A.P. is saved");
       } catch (error) {
         status.textContent = error instanceof Error ? error.message : "Save failed";
@@ -2885,6 +3003,7 @@
     document.getElementById("appFrame").addEventListener("load", attachFrameInspection);
 
     loadTheme();
+    refreshCursorAgentStatus();
     loadDrawerWidth();
     loadState();
     renderSections();

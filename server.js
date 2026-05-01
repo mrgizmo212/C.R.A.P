@@ -24,6 +24,34 @@ const config = {
   cursorModel: String(process.env.QA_CURSOR_MODEL || "composer-2"),
 };
 
+function cursorSdkAvailable() {
+  try {
+    require.resolve("@cursor/sdk");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function cursorAgentStatus() {
+  const sdkAvailable = cursorSdkAvailable();
+  const configured = Boolean(config.cursorApiKey.trim());
+  const enabled = Boolean(config.aiReportEnabled && configured && sdkAvailable);
+  let reason = "Cursor SDK reports are configured";
+  if (!config.aiReportEnabled) reason = "AI report generation is disabled";
+  else if (!configured) reason = "CURSOR_API_KEY is not configured";
+  else if (!sdkAvailable) reason = "@cursor/sdk is not installed";
+  return {
+    ai_report_enabled: config.aiReportEnabled,
+    cursor_sdk_configured: configured,
+    cursor_sdk_available: sdkAvailable,
+    cursor_agent_enabled: enabled,
+    cursor_agent_status: enabled ? "enabled" : "disabled",
+    cursor_agent_reason: reason,
+    cursor_model: config.cursorModel,
+  };
+}
+
 function isLocalHost(host) {
   return host === "127.0.0.1" || host === "localhost" || host === "::1";
 }
@@ -825,8 +853,7 @@ async function router(req, res) {
         ? "REVIEW_TOKEN is a lightweight local gate, not full authentication."
         : "No authentication is enabled. Keep this bound to localhost.",
       submissions_dir: SUBMISSIONS_DIR,
-      ai_report_enabled: config.aiReportEnabled,
-      cursor_sdk_configured: Boolean(config.cursorApiKey.trim()),
+      ...cursorAgentStatus(),
     });
     return;
   }
