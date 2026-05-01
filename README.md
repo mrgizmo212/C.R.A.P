@@ -8,7 +8,11 @@
 
 **Powered by Cursor SDK**
 
-[Watch the C.R.A.P. demo](assets/crapVideoOpt.mp4)
+
+
+https://github.com/user-attachments/assets/b4c208b2-96c4-41c0-b4ad-5b29c6bc8e61
+
+### C.R.A.P uses the Cursor AI SDK to power certain intelligent features. C.R.A.P is not affiliated with, endorsed by, or sponsored by Cursor.com or Anysphere.
 
 </div>
 
