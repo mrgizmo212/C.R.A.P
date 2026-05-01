@@ -1,4 +1,12 @@
-# It's your C.R.A.P. Review it. Fix it. Ship it. Powered by Cursor SDK.
+<div align="center">
+
+# It's Your C.R.A.P.
+
+### Review it. Fix it. Ship it.
+
+**Powered by Cursor SDK**
+
+</div>
 
 # Codebase Review Action Planner (C.R.A.P.)
 
@@ -54,12 +62,29 @@ Each review is meant to answer:
 - Box selection and annotation tools
 - Copy/export C.R.A.P. Markdown
 - Optional Cursor SDK AI report generation
+  - If you do not want your codebase to be actual CRAP, this part is only technically optional.
 - Deterministic fallback report when Cursor SDK or `CURSOR_API_KEY` is unavailable
 - Cursor handoff prompt generated after every save so another agent knows what was captured and where to inspect it
+- Project Cursor skill at `.cursor/skills/look-at-this-crap/SKILL.md` for turning saved C.R.A.P. folders into action-ready Cursor investigations
 
 ## Requirements
 
 - Node.js 20 or newer
+
+## Cursor Skill: Look At This CRAP
+
+This repo includes a project skill named `look-at-this-crap`. When C.R.A.P. saves a review, the generated `cursor-prompt.md` tells Cursor to use that skill if it is available.
+
+The skill teaches Cursor how to read a saved C.R.A.P. folder, verify the screenshots, notes, payload, manifest, and AI/fallback report, then produce a code-backed investigation report before touching any code.
+
+If you copy C.R.A.P. into another repo, keep this folder with it:
+
+```text
+.cursor/
+  skills/
+    look-at-this-crap/
+      SKILL.md
+```
 
 ## Where To Install It
 

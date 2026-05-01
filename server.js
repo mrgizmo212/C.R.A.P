@@ -322,6 +322,7 @@ function buildCursorPrompt({ submissionId, folder, payload, savedImages, summary
     "",
     "```text",
     "You are reviewing evidence captured with Codebase Review Action Planner (C.R.A.P.).",
+    "Use the look-at-this-crap skill if it is available.",
     "",
     "What happened:",
     `- Tester/reviewer: ${tester}`,
