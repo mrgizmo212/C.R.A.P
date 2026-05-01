@@ -1228,6 +1228,16 @@
   </div>
 
   <script>
+    function isLocalHostAlias(hostname) {
+      return ["localhost", "127.0.0.1"].includes(String(hostname || "").toLowerCase());
+    }
+
+    function defaultLocalAppUrl() {
+      const host = isLocalHostAlias(window.location.hostname) ? window.location.hostname : "localhost";
+      const scheme = window.location.protocol === "https:" ? "https" : "http";
+      return `${scheme}://${host}:3000`;
+    }
+
     const STORAGE_KEY = "codebase-review-action-planner-v1";
     const DRAWER_WIDTH_KEY = "crap-drawer-width-v1";
     const THEME_KEY = "crap-theme-v1";
@@ -1236,7 +1246,7 @@
       CRAP_CONFIG.reviewToken ?? window.CRAP_REVIEW_TOKEN ?? localStorage.getItem("crap-review-token-v1") ?? "",
     );
     const DEFAULT_APP_URL = String(
-      CRAP_CONFIG.defaultAppUrl ?? window.CRAP_DEFAULT_APP_URL ?? "http://localhost:3000",
+      CRAP_CONFIG.defaultAppUrl ?? window.CRAP_DEFAULT_APP_URL ?? defaultLocalAppUrl(),
     );
     const SAVE_ENDPOINT = String(CRAP_CONFIG.saveEndpoint ?? window.CRAP_SAVE_ENDPOINT ?? "/api/reviews");
     const SAVE_AUTH_TOKEN = String(CRAP_CONFIG.authToken ?? window.CRAP_AUTH_TOKEN ?? "");
@@ -1377,10 +1387,18 @@
       const raw = String(value || "").trim() || DEFAULT_APP_URL;
       const withScheme = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(raw) ? raw : `https://${raw}`;
       try {
-        return new URL(withScheme, window.location.origin).href;
+        const base = window.location.origin && window.location.origin !== "null" ? window.location.origin : DEFAULT_APP_URL;
+        return normalizeLocalReviewUrl(new URL(withScheme, base)).href;
       } catch {
         return DEFAULT_APP_URL;
       }
+    }
+
+    function normalizeLocalReviewUrl(url) {
+      if (isLocalHostAlias(window.location.hostname) && isLocalHostAlias(url.hostname)) {
+        url.hostname = window.location.hostname;
+      }
+      return url;
     }
 
     function referenceBaseUrl() {
@@ -1452,6 +1470,7 @@
           createdAt: section.createdAt,
         })),
         siteLocked,
+        drawer: appDrawerSnapshot(),
       };
     }
 
@@ -1462,6 +1481,7 @@
     function loadState() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
+        document.getElementById("siteInput").value = normalizeSiteUrl(DEFAULT_APP_URL);
         applySiteLockState();
         return;
       }
@@ -1476,8 +1496,14 @@
         sections = Array.isArray(state.sections)
           ? state.sections.map((section) => ({ ...section, screenshots: [] }))
           : [];
+        const siteInput = document.getElementById("siteInput");
+        siteInput.value = normalizeSiteUrl(siteInput.value);
         siteLocked = Boolean(state.siteLocked);
         applySiteLockState();
+        const drawerState = state.drawer && typeof state.drawer === "object" ? state.drawer : null;
+        if (drawerState?.open) {
+          openAppDrawer(String(drawerState.url || ""), { silent: true, restoring: true });
+        }
       } catch {
         sections = [];
       }
@@ -2461,16 +2487,27 @@
       }
     }
 
-    function appFrameUrl() {
+    function appFrameUrl(fallback = referenceBaseUrl()) {
       const frame = document.getElementById("appFrame");
       try {
-        return frame.contentWindow?.location?.href || frame.src || referenceBaseUrl();
+        return frame.contentWindow?.location?.href || frame.src || fallback;
       } catch {
-        return frame.src || referenceBaseUrl();
+        return frame.src || fallback;
       }
     }
 
-    function openAppDrawer(path = "") {
+    function appDrawerSnapshot() {
+      const drawer = document.getElementById("appDrawer");
+      const frame = document.getElementById("appFrame");
+      const url = appFrameUrl("");
+      return {
+        open: Boolean(drawer?.classList.contains("open")),
+        loaded: Boolean(appDrawerLoaded || frame?.src),
+        url,
+      };
+    }
+
+    function openAppDrawer(path = "", options = {}) {
       const drawer = document.getElementById("appDrawer");
       const frame = document.getElementById("appFrame");
       const target = path ? normalizeSiteUrl(path) : "";
@@ -2486,7 +2523,8 @@
       document.body.classList.add("app-drawer-open");
       attachFrameInspectionWhenReady();
       renderPersistentBoxSelections();
-      showToast("App drawer opened");
+      saveState();
+      if (!options.silent) showToast("App drawer opened");
     }
 
     function closeAppDrawer() {
@@ -2496,6 +2534,7 @@
       drawer.classList.remove("open");
       drawer.setAttribute("aria-hidden", "true");
       document.body.classList.remove("app-drawer-open");
+      saveState();
     }
 
     function reloadAppDrawer() {
@@ -2507,7 +2546,8 @@
       try {
         frame.contentWindow?.location.reload();
       } catch {
-        frame.src = frame.src || referenceBaseUrl();
+        if (!frame.src) openAppDrawer();
+        else showToast("Reload is blocked for this framed page; the current page was left alone");
       }
     }
 
@@ -2761,6 +2801,12 @@
       setTimeout(attachFrameInspection, 250);
     }
 
+    function handleAppFrameLoad() {
+      appDrawerLoaded = true;
+      saveState();
+      attachFrameInspection();
+    }
+
     function attachFrameInspection() {
       const doc = frameDocument();
       if (!doc) {
@@ -3010,7 +3056,9 @@
       input.addEventListener("input", saveState);
       input.addEventListener("change", saveState);
     });
-    document.getElementById("appFrame").addEventListener("load", attachFrameInspection);
+    document.getElementById("appFrame").addEventListener("load", handleAppFrameLoad);
+    window.addEventListener("pagehide", saveState);
+    window.addEventListener("beforeunload", saveState);
 
     loadTheme();
     refreshCursorAgentStatus();

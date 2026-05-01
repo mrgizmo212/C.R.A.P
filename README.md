@@ -43,13 +43,15 @@ Each review is meant to answer:
 ## How To Use It
 
 1. Start the local server with `npm start`.
-2. Open `http://127.0.0.1:8088/`.
+2. Open `http://localhost:8088/` or `http://127.0.0.1:8088/`.
 3. Enter the Reference Base URL you want to inspect, usually another local app like `http://localhost:3000`.
 4. Click **Lock and Load**, then open the drawer.
 5. Use **Select Element** when the browser allows same-origin inspection, or **Box Select** when it does not.
 6. Add notes and annotations for each captured section.
 7. Click **Save This C.R.A.P.**
 8. Open the saved folder or copy the generated Cursor handoff prompt.
+
+For local apps, C.R.A.P. automatically aligns `localhost` and `127.0.0.1` to the hostname you used to open the board. Paths are preserved, so an admin dash URL like `http://localhost:3000/admin` stays on `/admin` while avoiding local login-cookie weirdness.
 
 ## Features
 
