@@ -8,6 +8,8 @@
 
 **Powered by Cursor SDK**
 
+[Watch the C.R.A.P. demo](assets/crapVideo.mp4)
+
 </div>
 
 # Codebase Review Action Planner, or C.R.A.P. for short
