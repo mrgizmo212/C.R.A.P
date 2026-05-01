@@ -666,6 +666,44 @@
       gap: 10px;
     }
 
+    .cursor-prompt-panel.loading {
+      display: grid;
+      gap: 10px;
+      border-color: color-mix(in oklab, var(--ttg-caution-amber) 50%, var(--ui-border));
+      background: var(--warn-bg);
+    }
+
+    .cursor-prompt-panel.loading textarea {
+      color: var(--warn-text);
+    }
+
+    .cursor-prompt-loading {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      color: var(--warn-text);
+      font-weight: 800;
+    }
+
+    .cursor-prompt-panel.loading .cursor-prompt-loading {
+      display: flex;
+    }
+
+    .cursor-prompt-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid color-mix(in oklab, var(--ttg-caution-amber) 28%, transparent);
+      border-top-color: var(--ttg-caution-amber);
+      border-radius: 999px;
+      animation: spin 800ms linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
     .cursor-prompt-panel textarea {
       min-height: 220px;
       font-family: var(--ttg-font-mono);
@@ -797,6 +835,70 @@
       min-height: 20px;
     }
 
+    .app-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      place-items: center;
+      background: var(--modal-scrim);
+      padding: 18px;
+    }
+
+    .app-modal.open {
+      display: grid;
+    }
+
+    .app-modal-card {
+      width: min(560px, 100%);
+      border: 1px solid color-mix(in oklab, var(--action) 34%, var(--ui-border));
+      border-radius: 12px;
+      background: var(--panel);
+      box-shadow: var(--canvas-shadow);
+      padding: 18px;
+    }
+
+    .app-modal-kicker {
+      margin: 0 0 8px;
+      color: var(--action);
+      font-family: var(--ttg-font-mono);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .app-modal-title {
+      margin: 0;
+      font-family: var(--ttg-font-display);
+      font-size: 20px;
+      line-height: 1.25;
+    }
+
+    .app-modal-message {
+      margin: 10px 0 0;
+      color: var(--muted-text);
+      white-space: pre-wrap;
+    }
+
+    .app-modal-input {
+      display: none;
+      margin-top: 14px;
+      min-height: 110px;
+    }
+
+    .app-modal.with-input .app-modal-input {
+      display: block;
+    }
+
+    .app-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
     .toast {
       position: fixed;
       right: 18px;
@@ -807,10 +909,29 @@
       border-radius: 8px;
       padding: 10px 12px;
       font-size: 14px;
+      font-weight: 800;
       opacity: 0;
       transform: translateY(8px);
       pointer-events: none;
       transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    .toast.success {
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      color: var(--success-text);
+    }
+
+    .toast.warn {
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-border);
+      color: var(--warn-text);
+    }
+
+    .toast.error {
+      background: color-mix(in oklab, var(--danger) 14%, var(--background));
+      border: 1px solid color-mix(in oklab, var(--danger) 48%, var(--ui-border));
+      color: var(--danger);
     }
 
     .toast.show {
@@ -1189,16 +1310,33 @@
         <div class="cursor-prompt-actions">
           <div>
             <strong>Cursor handoff prompt</strong>
-            <p class="footer-note">Paste this into Cursor so it knows what this C.R.A.P. captured and where the saved folder lives.</p>
+            <p class="footer-note">Paste this into Cursor so it invokes `look-at-this-crap`, reads the saved evidence, and knows what to fix.</p>
           </div>
           <button type="button" id="copyCursorPrompt" class="primary">Copy Cursor Prompt</button>
+        </div>
+        <div class="cursor-prompt-loading" id="cursorPromptLoading">
+          <span class="cursor-prompt-spinner" aria-hidden="true"></span>
+          Preparing Cursor prompt and C.R.A.P. evidence package...
         </div>
         <textarea id="cursorPromptText" readonly spellcheck="false"></textarea>
       </div>
     </div>
   </main>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="toast app-notification" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="app-modal" id="appModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="appModalTitle" aria-describedby="appModalMessage">
+    <div class="app-modal-card">
+      <p class="app-modal-kicker" id="appModalKicker">C.R.A.P. Action</p>
+      <h2 class="app-modal-title" id="appModalTitle">Confirm Action</h2>
+      <p class="app-modal-message" id="appModalMessage"></p>
+      <textarea class="app-modal-input" id="appModalInput" spellcheck="true"></textarea>
+      <div class="app-modal-actions">
+        <button type="button" id="appModalCancel">Cancel</button>
+        <button type="button" id="appModalConfirm" class="primary">Continue</button>
+      </div>
+    </div>
+  </div>
 
   <div class="annotation-modal" id="annotationModal" aria-hidden="true">
     <div class="annotation-toolbar">
@@ -1275,12 +1413,66 @@
     let annotationPointerAction = null;
     let annotationPointerStart = null;
     let annotationOriginalMark = null;
+    let toastTimer = null;
+    let appModalResolve = null;
+    let appModalLastFocus = null;
 
-    function showToast(message) {
+    function showToast(message, kind = "success") {
       const toast = document.getElementById("toast");
+      clearTimeout(toastTimer);
       toast.textContent = message;
+      toast.className = `toast app-notification ${kind}`;
       toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 2200);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+
+    function closeAppModal(result) {
+      const modal = document.getElementById("appModal");
+      const input = document.getElementById("appModalInput");
+      modal.classList.remove("open", "with-input");
+      modal.setAttribute("aria-hidden", "true");
+      input.value = "";
+      const resolve = appModalResolve;
+      appModalResolve = null;
+      appModalLastFocus?.focus?.();
+      appModalLastFocus = null;
+      if (resolve) resolve(result);
+    }
+
+    function showAppModal(options = {}) {
+      const modal = document.getElementById("appModal");
+      const title = document.getElementById("appModalTitle");
+      const message = document.getElementById("appModalMessage");
+      const input = document.getElementById("appModalInput");
+      const cancel = document.getElementById("appModalCancel");
+      const confirm = document.getElementById("appModalConfirm");
+      if (appModalResolve) closeAppModal(null);
+      appModalLastFocus = document.activeElement;
+      title.textContent = options.title || "C.R.A.P. Action";
+      message.textContent = options.message || "";
+      input.value = options.defaultValue || "";
+      input.placeholder = options.placeholder || "";
+      modal.classList.toggle("with-input", Boolean(options.input));
+      cancel.textContent = options.cancelLabel || "Cancel";
+      cancel.style.display = options.cancelLabel === null ? "none" : "";
+      confirm.textContent = options.confirmLabel || "Continue";
+      confirm.classList.toggle("danger", Boolean(options.danger));
+      confirm.classList.toggle("primary", !options.danger);
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+      setTimeout(() => (options.input ? input : confirm).focus(), 0);
+      return new Promise((resolve) => {
+        appModalResolve = resolve;
+      });
+    }
+
+    async function showConfirmModal(options) {
+      return Boolean(await showAppModal(options));
+    }
+
+    async function showTextModal(options) {
+      const value = await showAppModal({ ...options, input: true });
+      return typeof value === "string" ? value : "";
     }
 
     function setCursorAgentStatus(enabled, label, details = "") {
@@ -2188,15 +2380,23 @@
       return { id: makeId(), type, color: annotationColor(), size: annotationSize(), x: point.x, y: point.y, width: 1, height: 1 };
     }
 
-    function startAnnotationDraw(event) {
+    async function startAnnotationDraw(event) {
       const canvas = document.getElementById("annotationCanvas");
       const point = annotationCanvasPoint(event);
       annotationPointerStart = point;
       annotationPointerAction = null;
       annotationOriginalMark = null;
       if (annotationMode === "text") {
-        const text = prompt("Text annotation");
-        if (!text) return;
+        const text = (await showTextModal({
+          title: "Text Annotation",
+          message: "Add the text to place on this screenshot.",
+          placeholder: "Type annotation text...",
+          confirmLabel: "Add Text",
+        })).trim();
+        if (!text) {
+          showToast("Text annotation cancelled", "warn");
+          return;
+        }
         pushAnnotationUndo();
         const mark = { id: makeId(), type: "text", text, x: point.x, y: point.y, color: annotationColor(), size: Math.max(12, annotationSize() * 5) };
         annotationMarks.push(mark);
@@ -2430,12 +2630,15 @@
       return sections.filter((section) => section.screenshots.length === 0).map((section) => section.title);
     }
 
-    function setCursorPrompt(prompt) {
+    function setCursorPrompt(prompt, options = {}) {
       const panel = document.getElementById("cursorPromptPanel");
       const text = document.getElementById("cursorPromptText");
       const value = String(prompt || "").trim();
       text.value = value;
-      panel.classList.toggle("open", Boolean(value));
+      panel.classList.toggle("loading", Boolean(options.loading));
+      panel.classList.toggle("open", Boolean(value) || Boolean(options.loading));
+      text.setAttribute("aria-busy", options.loading ? "true" : "false");
+      document.getElementById("copyCursorPrompt").disabled = Boolean(options.loading) || !value;
     }
 
     function saveRequestHeaders() {
@@ -2446,18 +2649,36 @@
 
     async function saveReviewFolder() {
       if (!sections.length) {
-        const ok = confirm("No selected elements have been captured yet. Save an empty review folder?");
+        const ok = await showConfirmModal({
+          title: "Save Empty C.R.A.P.?",
+          message: "No selected elements have been captured yet. Save an empty review folder anyway?",
+          confirmLabel: "Save Empty Review",
+          cancelLabel: "Keep Reviewing",
+        });
         if (!ok) return;
       }
       const missing = sectionsMissingScreenshots();
       if (missing.length) {
-        const ok = confirm(`${missing.length} captured section(s) have no screenshot yet:\n\n${missing.join("\n")}\n\nSave anyway?`);
+        const ok = await showConfirmModal({
+          title: "Save Without Screenshots?",
+          message: `${missing.length} captured section(s) have no screenshot yet:\n\n${missing.join("\n")}\n\nSave anyway?`,
+          confirmLabel: "Save Anyway",
+          cancelLabel: "Add Screenshots",
+        });
         if (!ok) return;
       }
       const button = document.getElementById("saveReview");
       const status = document.getElementById("saveStatus");
       button.disabled = true;
-      status.textContent = "Saving this C.R.A.P....";
+      status.textContent = "Saving this C.R.A.P. and preparing the Cursor handoff prompt...";
+      setCursorPrompt(
+        [
+          "Preparing Cursor prompt...",
+          "",
+          "The saved prompt will invoke the `look-at-this-crap` skill, point Cursor at the review folder, and include the evidence map.",
+        ].join("\n"),
+        { loading: true },
+      );
       try {
         const response = await fetch(SAVE_ENDPOINT, {
           method: "POST",
@@ -2481,7 +2702,7 @@
       } catch (error) {
         status.textContent = error instanceof Error ? error.message : "Save failed";
         setCursorPrompt("");
-        showToast("Save failed");
+        showToast("Save failed", "error");
       } finally {
         button.disabled = false;
       }
@@ -2974,8 +3195,15 @@
       showToast("C.R.A.P. exported");
     }
 
-    function resetForm() {
-      if (!confirm("Reset this C.R.A.P., notes, and saved text?")) return;
+    async function resetForm() {
+      const ok = await showConfirmModal({
+        title: "Reset This C.R.A.P.?",
+        message: "This clears captured sections, notes, saved text, and the current Cursor prompt from this browser.",
+        confirmLabel: "Reset Board",
+        cancelLabel: "Keep Current Review",
+        danger: true,
+      });
+      if (!ok) return;
       localStorage.removeItem(STORAGE_KEY);
       sections = [];
       activeSectionId = null;
@@ -3030,6 +3258,24 @@
     document.getElementById("boxSelectLayer").addEventListener("pointermove", moveBoxSelection);
     document.getElementById("boxSelectLayer").addEventListener("pointerup", finishBoxSelection);
     document.getElementById("boxSelectLayer").addEventListener("pointercancel", clearDraftBox);
+    document.getElementById("appModalCancel").addEventListener("click", () => closeAppModal(null));
+    document.getElementById("appModalConfirm").addEventListener("click", () => {
+      const modal = document.getElementById("appModal");
+      const input = document.getElementById("appModalInput");
+      closeAppModal(modal.classList.contains("with-input") ? input.value : true);
+    });
+    document.getElementById("appModal").addEventListener("click", (event) => {
+      if (event.target === event.currentTarget) closeAppModal(null);
+    });
+    document.addEventListener("keydown", (event) => {
+      const modal = document.getElementById("appModal");
+      if (!modal.classList.contains("open")) return;
+      if (event.key === "Escape") closeAppModal(null);
+      if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+        const input = document.getElementById("appModalInput");
+        closeAppModal(modal.classList.contains("with-input") ? input.value : true);
+      }
+    });
     document.getElementById("annotateMove").addEventListener("click", () => setAnnotationMode("move"));
     document.getElementById("annotateDraw").addEventListener("click", () => setAnnotationMode("draw"));
     document.getElementById("annotateText").addEventListener("click", () => setAnnotationMode("text"));

@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="assets/crap-logo.png" alt="C.R.A.P. logo" width="360">
+# It's Your
 
-# It's Your C.R.A.P.
+<img src="assets/crap-logo.png" alt="C.R.A.P. logo" width="360">
 
 ### Review it. Fix it. Ship it.
 
