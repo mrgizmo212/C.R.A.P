@@ -1128,7 +1128,7 @@
       <div class="meta-head">
         <div>
           <h2>Review Setup</h2>
-          <p>Who made this C.R.A.P., what browser is in use, and which site should load in the drawer.</p>
+          <p>Who worked on this C.R.A.P., what browser is in use, and which reference base URL should start the drawer.</p>
         </div>
         <span class="setup-status">Setup</span>
       </div>
@@ -1146,7 +1146,7 @@
           <input data-meta="Browser" type="text" placeholder="Chrome, Edge, Safari..." />
         </label>
         <label class="field site-field">
-          Site
+          Reference Base URL
           <span class="site-lock-row">
             <input data-meta="Site" id="siteInput" type="text" value="http://localhost:3000" placeholder="https://example.com" />
             <button type="button" id="siteLockButton">Lock and Load</button>
@@ -1377,7 +1377,7 @@
       }
     }
 
-    function currentDrawerUrl() {
+    function referenceBaseUrl() {
       return normalizeSiteUrl(siteInputValue());
     }
 
@@ -2458,17 +2458,21 @@
     function appFrameUrl() {
       const frame = document.getElementById("appFrame");
       try {
-        return frame.contentWindow?.location?.href || frame.src || currentDrawerUrl();
+        return frame.contentWindow?.location?.href || frame.src || referenceBaseUrl();
       } catch {
-        return frame.src || currentDrawerUrl();
+        return frame.src || referenceBaseUrl();
       }
     }
 
-    function openAppDrawer(path = currentDrawerUrl()) {
+    function openAppDrawer(path = "") {
       const drawer = document.getElementById("appDrawer");
       const frame = document.getElementById("appFrame");
-      if (!appDrawerLoaded || frame.src !== path) {
-        frame.src = path;
+      const target = path ? normalizeSiteUrl(path) : "";
+      if (!appDrawerLoaded) {
+        frame.src = target || referenceBaseUrl();
+        appDrawerLoaded = true;
+      } else if (target && frame.src !== target) {
+        frame.src = target;
         appDrawerLoaded = true;
       }
       drawer.classList.add("open");
@@ -2497,13 +2501,13 @@
       try {
         frame.contentWindow?.location.reload();
       } catch {
-        frame.src = frame.src || currentDrawerUrl();
+        frame.src = frame.src || referenceBaseUrl();
       }
     }
 
     function openNewChatInDrawer() {
       appDrawerLoaded = false;
-      const url = new URL(currentDrawerUrl(), window.location.origin);
+      const url = new URL(referenceBaseUrl(), window.location.origin);
       if (url.origin === window.location.origin) {
         openAppDrawer(`${url.origin}/c/new?qa=${Date.now()}`);
       } else {
