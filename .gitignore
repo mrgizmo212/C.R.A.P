@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Local config and secrets
+.env
+.env.*
+!.env.example
+
+# Review output
+submissions/*
+!submissions/.gitkeep
+
+# Logs and runtime noise
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+

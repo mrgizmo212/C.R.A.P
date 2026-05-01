@@ -1,0 +1,17 @@
+{
+  "name": "codebase-review-action-planner",
+  "version": "1.0.0",
+  "description": "C.R.A.P. - Codebase Review Action Planner for capturing UI review evidence and generating action reports.",
+  "license": "MIT",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js"
+  },
+  "optionalDependencies": {
+    "@cursor/sdk": "^1.0.11"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

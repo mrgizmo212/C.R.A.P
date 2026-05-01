@@ -1,0 +1,2881 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Codebase Review Action Planner</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+    :root {
+      color-scheme: light;
+      --drawer-width: min(64vw, 980px);
+      --radius: 0.625rem;
+      --ttg-ink-terminal: #0a0e17;
+      --ttg-ink-terminal-raised: #0d1321;
+      --ttg-ink-terminal-panel: #111827;
+      --ttg-ink-terminal-card: #141c2b;
+      --ttg-ink-terminal-hover: #1a2435;
+      --ttg-border-terminal: #1e293b;
+      --ttg-border-terminal-strong: #334155;
+      --ttg-text-primary-dark: #f1f5f9;
+      --ttg-text-secondary-dark: #94a3b8;
+      --ttg-text-muted-dark: #64748b;
+      --ttg-electric-cyan: #00ffd5;
+      --ttg-cyan-secondary: #00b4d8;
+      --ttg-cyan-deep: #0096c7;
+      --ttg-profit-green: #00ff88;
+      --ttg-profit-green-dim: #00cc6a;
+      --ttg-risk-red: #ff3366;
+      --ttg-caution-amber: #ffb800;
+      --ttg-pro-purple: #c084fc;
+      --ttg-brand-gradient: linear-gradient(135deg, #00b4d8 0%, #00ffd5 50%, #00ff88 100%);
+      --ttg-brand-gradient-soft: linear-gradient(135deg, rgba(0, 180, 216, .15) 0%, rgba(0, 255, 213, .15) 50%, rgba(0, 255, 136, .15) 100%);
+      --ttg-bg-grid:
+        linear-gradient(rgba(30, 41, 59, .35) 1px, transparent 1px) 0 0 / 50px 50px,
+        linear-gradient(90deg, rgba(30, 41, 59, .35) 1px, transparent 1px) 0 0 / 50px 50px,
+        radial-gradient(1200px 600px at 80% -10%, rgba(0, 180, 216, .08), transparent 60%),
+        radial-gradient(900px 500px at 0% 100%, rgba(0, 255, 213, .06), transparent 55%),
+        var(--ttg-ink-terminal);
+      --ttg-glow-cyan-sm: 0 0 8px rgba(0, 255, 213, .35);
+      --ttg-glow-cyan-md: 0 0 16px rgba(0, 255, 213, .45), 0 0 2px rgba(0, 255, 213, .6);
+      --ttg-glow-green: 0 0 12px rgba(0, 255, 136, .45);
+      --ttg-glow-red: 0 0 12px rgba(255, 51, 102, .45);
+      --ttg-shadow-panel: 0 1px 0 rgba(255, 255, 255, .02) inset, 0 8px 24px rgba(0, 0, 0, .35);
+      --ttg-font-display: "Orbitron", "Space Grotesk", system-ui, sans-serif;
+      --ttg-font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --ttg-font-mono: "JetBrains Mono", "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --background: oklch(1 0 0);
+      --foreground: oklch(0.145 0 0);
+      --card: oklch(1 0 0);
+      --card-foreground: oklch(0.145 0 0);
+      --popover: oklch(1 0 0);
+      --popover-foreground: oklch(0.145 0 0);
+      --primary: oklch(0.205 0 0);
+      --primary-foreground: oklch(0.985 0 0);
+      --secondary: oklch(0.97 0 0);
+      --secondary-foreground: oklch(0.205 0 0);
+      --muted: oklch(0.97 0 0);
+      --muted-foreground: oklch(0.556 0 0);
+      --accent: oklch(0.97 0 0);
+      --accent-foreground: oklch(0.205 0 0);
+      --destructive: oklch(0.577 0.245 27.325);
+      --border: oklch(0.922 0 0);
+      --input: oklch(0.922 0 0);
+      --ring: oklch(0.708 0 0);
+      --sidebar: oklch(0.985 0 0);
+      --sidebar-foreground: oklch(0.145 0 0);
+      --sidebar-primary: oklch(0.205 0 0);
+      --sidebar-primary-foreground: oklch(0.985 0 0);
+      --sidebar-accent: oklch(0.97 0 0);
+      --sidebar-accent-foreground: oklch(0.205 0 0);
+      --sidebar-border: oklch(0.922 0 0);
+      --sidebar-ring: oklch(0.708 0 0);
+      --bg: var(--background);
+      --panel: var(--card);
+      --text: var(--foreground);
+      --muted-text: var(--muted-foreground);
+      --ui-border: var(--border);
+      --action: var(--primary);
+      --action-foreground: var(--primary-foreground);
+      --action-hover: var(--secondary-foreground);
+      --danger: var(--destructive);
+      --soft: var(--muted);
+      --input-bg: var(--background);
+      --disabled-bg: var(--muted);
+      --header-bg: color-mix(in oklab, var(--background) 94%, transparent);
+      --drawer-header-bg: var(--secondary);
+      --capture-bg: var(--muted);
+      --capture-active-bg: var(--accent);
+      --empty-bg: var(--background);
+      --modal-scrim: rgba(15, 23, 42, 0.78);
+      --canvas-bg: var(--ttg-ink-terminal-panel);
+      --toast-bg: var(--foreground);
+      --toast-foreground: var(--background);
+      --canvas-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      --drawer-shadow: -18px 0 32px rgba(15, 23, 42, 0.18);
+      --warn-bg: color-mix(in oklab, var(--ttg-caution-amber) 16%, var(--background));
+      --warn-border: color-mix(in oklab, var(--ttg-caution-amber) 50%, var(--ui-border));
+      --warn-text: color-mix(in oklab, var(--ttg-caution-amber) 70%, var(--foreground));
+      --success-bg: color-mix(in oklab, var(--ttg-profit-green) 14%, var(--background));
+      --success-border: color-mix(in oklab, var(--ttg-profit-green) 45%, var(--ui-border));
+      --success-text: color-mix(in oklab, var(--ttg-profit-green-dim) 70%, var(--foreground));
+      --shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --background: var(--ttg-ink-terminal);
+      --foreground: var(--ttg-text-primary-dark);
+      --card: var(--ttg-ink-terminal-card);
+      --card-foreground: var(--ttg-text-primary-dark);
+      --popover: var(--ttg-ink-terminal-card);
+      --popover-foreground: var(--ttg-text-primary-dark);
+      --primary: var(--ttg-electric-cyan);
+      --primary-foreground: #031017;
+      --secondary: var(--ttg-ink-terminal-panel);
+      --secondary-foreground: var(--ttg-text-primary-dark);
+      --muted: var(--ttg-ink-terminal-panel);
+      --muted-foreground: var(--ttg-text-secondary-dark);
+      --accent: var(--ttg-ink-terminal-hover);
+      --accent-foreground: var(--ttg-text-primary-dark);
+      --destructive: var(--ttg-risk-red);
+      --border: var(--ttg-border-terminal);
+      --input: var(--ttg-border-terminal-strong);
+      --ring: var(--ttg-electric-cyan);
+      --sidebar: var(--ttg-ink-terminal-raised);
+      --sidebar-foreground: var(--ttg-text-primary-dark);
+      --sidebar-primary: var(--ttg-electric-cyan);
+      --sidebar-primary-foreground: #031017;
+      --sidebar-accent: var(--ttg-ink-terminal-hover);
+      --sidebar-accent-foreground: var(--ttg-text-primary-dark);
+      --sidebar-border: var(--ttg-border-terminal);
+      --sidebar-ring: var(--ttg-electric-cyan);
+      --bg: var(--background);
+      --panel: var(--card);
+      --text: var(--foreground);
+      --muted-text: var(--muted-foreground);
+      --ui-border: var(--border);
+      --action: var(--primary);
+      --action-foreground: var(--primary-foreground);
+      --action-hover: var(--ttg-cyan-secondary);
+      --danger: var(--destructive);
+      --soft: var(--muted);
+      --input-bg: var(--ttg-ink-terminal-raised);
+      --disabled-bg: var(--ttg-ink-terminal-panel);
+      --header-bg: color-mix(in oklab, var(--ttg-ink-terminal) 94%, transparent);
+      --drawer-header-bg: var(--ttg-ink-terminal-raised);
+      --capture-bg: var(--ttg-ink-terminal-panel);
+      --capture-active-bg: var(--ttg-ink-terminal-hover);
+      --empty-bg: var(--ttg-ink-terminal-raised);
+      --modal-scrim: rgba(2, 6, 23, 0.86);
+      --canvas-bg: var(--ttg-ink-terminal);
+      --toast-bg: var(--ttg-text-primary-dark);
+      --toast-foreground: var(--ttg-ink-terminal);
+      --canvas-shadow: var(--ttg-shadow-panel);
+      --drawer-shadow: var(--ttg-shadow-panel);
+      --warn-bg: color-mix(in oklab, var(--ttg-caution-amber) 15%, var(--ttg-ink-terminal-panel));
+      --warn-border: color-mix(in oklab, var(--ttg-caution-amber) 50%, var(--ttg-border-terminal));
+      --warn-text: var(--ttg-caution-amber);
+      --success-bg: color-mix(in oklab, var(--ttg-profit-green) 14%, var(--ttg-ink-terminal-panel));
+      --success-border: color-mix(in oklab, var(--ttg-profit-green) 45%, var(--ttg-border-terminal));
+      --success-text: var(--ttg-profit-green);
+      --shadow: var(--ttg-shadow-panel);
+    }
+
+    :root[data-theme="dark"] {
+      --bg: var(--ttg-bg-grid);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--ttg-font-body);
+      line-height: 1.5;
+    }
+
+    body.drawer-resizing {
+      cursor: col-resize;
+      user-select: none;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--header-bg);
+      border-bottom: 1px solid var(--ui-border);
+      backdrop-filter: blur(10px);
+    }
+
+    .header-inner {
+      width: min(1320px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    main {
+      width: min(1240px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    body.app-drawer-open .header-inner,
+    body.app-drawer-open main {
+      width: max(360px, calc(100vw - var(--drawer-width) - 48px));
+      margin-left: 16px;
+      margin-right: 0;
+    }
+
+    body.app-drawer-open .header-inner {
+      grid-template-columns: 1fr;
+    }
+
+    body.app-drawer-open .actions,
+    body.app-drawer-open .action-group {
+      justify-content: flex-start;
+    }
+
+    body.app-drawer-open .meta-grid {
+      grid-template-columns: 1fr;
+    }
+
+    body.app-drawer-open .meta-head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    body.app-drawer-open .site-lock-row {
+      grid-template-columns: 1fr;
+    }
+
+    body.app-drawer-open .header-inner {
+      gap: 10px;
+      padding: 10px 0;
+    }
+
+    body.app-drawer-open .eyebrow,
+    body.app-drawer-open .subtitle {
+      display: none;
+    }
+
+    body.app-drawer-open h1 {
+      font-size: 20px;
+    }
+
+    body.app-drawer-open .actions {
+      gap: 6px;
+    }
+
+    body.app-drawer-open .action-group {
+      gap: 5px;
+      padding: 3px;
+    }
+
+    body.app-drawer-open button {
+      padding: 7px 9px;
+      font-size: 12px;
+    }
+
+    .header-inner {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) auto;
+      align-items: start;
+      gap: 20px;
+      padding: 18px 0;
+    }
+
+    .header-copy {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 5px;
+      color: var(--action);
+      font-family: var(--ttg-font-mono);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: var(--ttg-font-display);
+      font-size: clamp(24px, 3vw, 30px);
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      max-width: 680px;
+      margin: 6px 0 0;
+      color: var(--muted-text);
+      font-size: 15px;
+    }
+
+    .actions,
+    .row-actions,
+    .action-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .actions {
+      max-width: 660px;
+    }
+
+    .action-group {
+      padding: 4px;
+      border: 1px solid color-mix(in oklab, var(--ui-border) 78%, transparent);
+      border-radius: 10px;
+      background: color-mix(in oklab, var(--panel) 74%, transparent);
+    }
+
+    .action-group.primary-actions {
+      background: color-mix(in oklab, var(--action) 8%, var(--panel));
+      border-color: color-mix(in oklab, var(--action) 26%, var(--ui-border));
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--ui-border);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    button.primary,
+    button.active {
+      background: var(--action);
+      color: var(--action-foreground);
+      border-color: var(--action);
+    }
+
+    button.primary:hover,
+    button.active:hover {
+      background: var(--action-hover);
+    }
+
+    button.danger {
+      color: var(--danger);
+    }
+
+    main {
+      padding: 24px 0 56px;
+    }
+
+    .intro-panel,
+    .meta,
+    .capture-board,
+    .capture-section,
+    .final {
+      background: var(--panel);
+      border: 1px solid var(--ui-border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+      padding: 18px;
+    }
+
+    .intro-panel {
+      display: grid;
+      gap: 14px;
+    }
+
+    .intro-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .intro-card {
+      border: 1px solid var(--ui-border);
+      background: var(--input-bg);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .intro-card strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .intro-card p {
+      margin: 0;
+      color: var(--muted-text);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .intro-steps {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted-text);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(190px, 1fr));
+      gap: 14px;
+    }
+
+    .meta-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--ui-border);
+    }
+
+    .meta-head h2 {
+      margin: 0;
+    }
+
+    .meta-head p {
+      margin: 3px 0 0;
+      color: var(--muted-text);
+      font-size: 13px;
+    }
+
+    .setup-status {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 5px 10px;
+      border: 1px solid color-mix(in oklab, var(--action) 34%, var(--ui-border));
+      border-radius: 999px;
+      color: var(--action);
+      font-family: var(--ttg-font-mono);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      text-transform: uppercase;
+    }
+
+    .site-field {
+      grid-column: 1 / -1;
+    }
+
+    .site-lock-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(116px, auto);
+      gap: 10px;
+      align-items: center;
+    }
+
+    input:disabled {
+      background: var(--disabled-bg);
+      color: var(--muted-text);
+    }
+
+    label.field {
+      display: grid;
+      gap: 6px;
+      color: var(--muted-text);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--ui-border);
+      border-radius: 8px;
+      background: var(--input-bg);
+      color: var(--text);
+      padding: 10px 11px;
+      font: inherit;
+      font-size: 14px;
+    }
+
+    textarea {
+      min-height: 86px;
+      resize: vertical;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow: auto;
+      font-family: var(--ttg-font-mono);
+      font-size: 12px;
+    }
+
+    .empty-state {
+      border: 1px dashed color-mix(in oklab, var(--action) 44%, var(--ui-border));
+      background: var(--soft);
+      border-radius: 8px;
+      color: var(--muted-text);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .section-title-input {
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .element-details {
+      display: grid;
+      gap: 8px;
+      margin: 12px 0;
+      border: 1px solid color-mix(in oklab, var(--action) 24%, var(--ui-border));
+      background: var(--soft);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .element-details strong {
+      color: var(--muted-text);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .review-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 10px 0;
+      color: var(--muted-text);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .review-row input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--action);
+    }
+
+    .screenshot-capture {
+      margin-top: 14px;
+      border: 1px dashed color-mix(in oklab, var(--action) 44%, var(--ui-border));
+      background: var(--capture-bg);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .screenshot-capture.active {
+      border-color: var(--action);
+      background: var(--capture-active-bg);
+      box-shadow: var(--ttg-glow-cyan-sm);
+    }
+
+    .capture-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .capture-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .capture-badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-border);
+      color: var(--warn-text);
+      font-size: 12px;
+      font-weight: 800;
+      padding: 3px 8px;
+      margin-left: 8px;
+    }
+
+    .capture-badge.complete {
+      background: var(--success-bg);
+      border-color: var(--success-border);
+      color: var(--success-text);
+    }
+
+    .capture-help,
+    .footer-note {
+      margin: 4px 0 0;
+      color: var(--muted-text);
+      font-size: 13px;
+    }
+
+    .cursor-prompt-panel {
+      display: none;
+      margin-top: 14px;
+      border: 1px solid color-mix(in oklab, var(--action) 36%, var(--ui-border));
+      background: var(--capture-bg);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .cursor-prompt-panel.open {
+      display: grid;
+      gap: 10px;
+    }
+
+    .cursor-prompt-panel textarea {
+      min-height: 220px;
+      font-family: var(--ttg-font-mono);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .cursor-prompt-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .screenshot-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .screenshot-empty {
+      border: 1px solid var(--ui-border);
+      background: var(--empty-bg);
+      border-radius: 8px;
+      color: var(--muted-text);
+      font-size: 14px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .screenshot-card {
+      display: grid;
+      grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      border: 1px solid var(--ui-border);
+      background: var(--input-bg);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .screenshot-card img {
+      width: 100%;
+      max-height: 220px;
+      object-fit: contain;
+      border: 1px solid var(--ui-border);
+      border-radius: 6px;
+      background: var(--input-bg);
+    }
+
+    .screenshot-meta {
+      display: grid;
+      gap: 8px;
+    }
+
+    .screenshot-name {
+      color: var(--muted-text);
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .annotation-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: none;
+      grid-template-rows: auto minmax(0, 1fr);
+      background: var(--modal-scrim);
+      padding: 18px;
+    }
+
+    .annotation-modal.open {
+      display: grid;
+    }
+
+    .annotation-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: var(--panel);
+      border-radius: 8px 8px 0 0;
+      border: 1px solid var(--ui-border);
+      padding: 10px;
+    }
+
+    .annotation-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .annotation-tools label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted-text);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .annotation-canvas-wrap {
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      overflow: auto;
+      background: var(--canvas-bg);
+      border: 1px solid var(--ui-border);
+      border-top: 0;
+      border-radius: 0 0 8px 8px;
+      padding: 12px;
+    }
+
+    .annotation-canvas {
+      max-width: 100%;
+      max-height: 100%;
+      background: var(--input-bg);
+      cursor: crosshair;
+      box-shadow: var(--canvas-shadow);
+    }
+
+    .save-status {
+      color: var(--muted-text);
+      font-size: 13px;
+      margin: 10px 0 0;
+      min-height: 20px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 50;
+      background: var(--toast-bg);
+      color: var(--toast-foreground);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .app-drawer {
+      position: fixed;
+      inset: 0 0 0 auto;
+      z-index: 30;
+      width: var(--drawer-width);
+      max-width: calc(100vw - 24px);
+      background: var(--panel);
+      border-left: 1px solid var(--ui-border);
+      box-shadow: var(--drawer-shadow);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      transform: translateX(105%);
+      transition: transform 180ms ease;
+    }
+
+    .app-drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-resize-handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: -10px;
+      z-index: 3;
+      width: 18px;
+      cursor: col-resize;
+      background: transparent;
+      touch-action: none;
+    }
+
+    .drawer-resize-handle::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 7px;
+      width: 4px;
+      height: 64px;
+      border-radius: 999px;
+      background: var(--sidebar-ring);
+      opacity: 0.75;
+      transform: translateY(-50%);
+    }
+
+    .drawer-resize-handle:hover::after,
+    body.drawer-resizing .drawer-resize-handle::after {
+      background: var(--action);
+      opacity: 1;
+    }
+
+    .app-drawer-header {
+      border-bottom: 1px solid var(--ui-border);
+      background: var(--drawer-header-bg);
+      padding: 10px 12px;
+    }
+
+    .app-drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .app-drawer-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .app-drawer-subtitle {
+      margin: 2px 0 0;
+      color: var(--muted-text);
+      font-size: 12px;
+    }
+
+    .app-drawer-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .drawer-width-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted-text);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .drawer-width-control input {
+      width: 120px;
+      accent-color: var(--action);
+    }
+
+    .app-frame-wrap {
+      position: relative;
+      min-height: 0;
+      background: var(--input-bg);
+    }
+
+    .app-frame {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: var(--input-bg);
+    }
+
+    .box-select-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: none;
+      cursor: crosshair;
+      background: color-mix(in oklab, var(--action) 8%, transparent);
+    }
+
+    .box-select-layer.active {
+      display: block;
+    }
+
+    .box-selection-rect,
+    .persistent-box-rect {
+      position: absolute;
+      border: 3px solid var(--ttg-profit-green);
+      background: color-mix(in oklab, var(--ttg-profit-green) 18%, transparent);
+      box-shadow: var(--ttg-glow-green);
+      pointer-events: none;
+    }
+
+    .box-selection-rect {
+      border-color: var(--action);
+      background: color-mix(in oklab, var(--action) 18%, transparent);
+      box-shadow: var(--ttg-glow-cyan-sm);
+    }
+
+    @media (max-width: 760px) {
+      .header-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        max-width: none;
+        justify-content: flex-start;
+      }
+
+      .action-group {
+        justify-content: flex-start;
+        width: 100%;
+      }
+
+      .intro-grid,
+      .meta-grid,
+      .screenshot-card {
+        grid-template-columns: 1fr;
+      }
+
+      .site-lock-row {
+        grid-template-columns: 1fr;
+      }
+
+      body.app-drawer-open .header-inner,
+      body.app-drawer-open main {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .app-drawer {
+        width: 100vw;
+        max-width: 100vw;
+      }
+
+      .drawer-resize-handle {
+        display: none;
+      }
+    }
+
+    @media print {
+      header,
+      .actions,
+      .app-drawer,
+      .toast {
+        display: none;
+      }
+
+      body {
+        background: var(--input-bg);
+      }
+
+      main {
+        width: 100%;
+        padding: 0;
+      }
+
+      .meta,
+      .capture-board,
+      .capture-section,
+      .final {
+        box-shadow: none;
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="header-copy">
+        <p class="eyebrow">C.R.A.P. Workspace</p>
+        <h1>Codebase Review Action Planner</h1>
+        <p class="subtitle">This C.R.A.P. will help you lock a site, review it in the drawer, capture the pieces that matter, and save annotated evidence in one action-ready folder.</p>
+      </div>
+      <div class="actions">
+        <div class="action-group primary-actions" aria-label="Primary actions">
+          <button type="button" id="openAppDrawer" class="primary">Open App Drawer</button>
+          <button type="button" id="saveReview" class="primary">Save This C.R.A.P.</button>
+        </div>
+        <div class="action-group" aria-label="Board actions">
+          <button type="button" id="themeToggle">Dark Mode</button>
+          <button type="button" id="copyMd">Copy C.R.A.P.</button>
+          <button type="button" id="downloadMd">Export C.R.A.P.</button>
+          <button type="button" id="printPage">Print</button>
+          <button type="button" id="resetForm" class="danger">Reset</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <aside class="app-drawer" id="appDrawer" aria-hidden="true">
+    <div
+      class="drawer-resize-handle"
+      id="drawerResizeHandle"
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Resize app drawer"
+      title="Drag to resize the app drawer"
+    ></div>
+    <div class="app-drawer-header">
+      <div>
+        <p class="app-drawer-title">Reviewed Site</p>
+        <p class="app-drawer-subtitle">Use Select Element where allowed, or Box Select to capture and annotate a visual region.</p>
+      </div>
+      <div class="app-drawer-actions">
+        <button type="button" id="drawerSelect">Select Element</button>
+        <button type="button" id="drawerBoxSelect">Box Select</button>
+        <button type="button" id="drawerNewChat">New Chat</button>
+        <button type="button" id="drawerReload">Reload</button>
+        <label class="drawer-width-control">Width <input id="drawerWidthRange" type="range" min="420" max="1200" value="980" /></label>
+        <button type="button" id="drawerResetWidth">Reset Width</button>
+        <button type="button" id="drawerPopout">Pop Out</button>
+        <button type="button" id="drawerClose" class="danger">Close</button>
+      </div>
+    </div>
+    <div class="app-frame-wrap">
+      <iframe
+        class="app-frame"
+        id="appFrame"
+        title="Reviewed application"
+        allow="clipboard-read; clipboard-write; fullscreen"
+        referrerpolicy="same-origin"
+      ></iframe>
+      <div class="box-select-layer" id="boxSelectLayer" aria-hidden="true"></div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="intro-panel">
+      <div class="meta-head">
+        <div>
+          <h2>What This C.R.A.P. Is</h2>
+          <p>Run C.R.A.P. alongside your app locally to identify bugs, add detailed comments, capture and annotate screenshots, then package everything into a folder Cursor can evaluate, plan from, and use to make corrections.</p>
+        </div>
+        <span class="setup-status">Local Only</span>
+      </div>
+      <div class="intro-grid">
+        <div class="intro-card">
+          <strong>What is a review?</strong>
+          <p>One saved capture session: the site you inspected, what looked wrong, screenshots, notes, annotations, and a generated Cursor handoff prompt.</p>
+        </div>
+        <div class="intro-card">
+          <strong>How do I use it?</strong>
+          <p>Load a site, select an element or box-select a region, annotate screenshots, add notes, then save this C.R.A.P. into a local evidence folder.</p>
+        </div>
+        <div class="intro-card">
+          <strong>What happens after save?</strong>
+          <p>The server writes Markdown, JSON, screenshots, an AI/fallback report, and a prompt telling Cursor exactly where to find the evidence.</p>
+        </div>
+      </div>
+      <ol class="intro-steps">
+        <li>Enter a local or reachable site URL and click Load / Lock.</li>
+        <li>Use Select Element when same-origin inspection works, or Box Select when it does not.</li>
+        <li>Add notes and annotated screenshots, then click Save This C.R.A.P.</li>
+      </ol>
+    </div>
+
+    <div class="meta">
+      <div class="meta-head">
+        <div>
+          <h2>Review Setup</h2>
+          <p>Who made this C.R.A.P., what browser is in use, and which site should load in the drawer.</p>
+        </div>
+        <span class="setup-status">Setup</span>
+      </div>
+      <div class="meta-grid">
+        <label class="field">
+          Who Made This C.R.A.P.?
+          <input data-meta="Tester" type="text" placeholder="Your name" />
+        </label>
+        <label class="field">
+          Date
+          <input data-meta="Date" type="text" placeholder="YYYY-MM-DD" />
+        </label>
+        <label class="field">
+          Browser
+          <input data-meta="Browser" type="text" placeholder="Chrome, Edge, Safari..." />
+        </label>
+        <label class="field site-field">
+          Site
+          <span class="site-lock-row">
+            <input data-meta="Site" id="siteInput" type="text" value="http://localhost:3000" placeholder="https://example.com" />
+            <button type="button" id="siteLockButton">Load / Lock</button>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class="capture-board">
+      <div class="section-head">
+        <div>
+          <h2>Captured Sections</h2>
+          <p class="footer-note">This C.R.A.P. starts blank. Use Select Element in the app drawer to create sections here.</p>
+        </div>
+        <button type="button" id="addManualSection">Add Blank Section</button>
+      </div>
+      <div id="sectionsRoot"></div>
+      <div class="empty-state" id="emptyState">
+        No C.R.A.P. captured yet. Open the app drawer, then use Select Element or Box Select. Box Select creates a section and opens the selected crop for annotation.
+      </div>
+    </div>
+
+    <div class="final">
+      <h2>Final Verdict</h2>
+      <div class="meta-grid" style="margin-top: 14px;">
+        <label class="field">
+          Overall Result
+          <select data-final="Overall result">
+            <option value="">Select...</option>
+            <option>PASS</option>
+            <option>FAIL</option>
+            <option>NEEDS WORK</option>
+          </select>
+        </label>
+      </div>
+      <label class="field" style="margin-top: 14px;">Top issues found<textarea data-final="Top issues found" placeholder="1.&#10;2.&#10;3."></textarea></label>
+      <p class="footer-note">Section text is stored in this browser. Screenshots stay in this page until you click Save This C.R.A.P.</p>
+      <p class="save-status" id="saveStatus"></p>
+      <div class="cursor-prompt-panel" id="cursorPromptPanel" aria-live="polite">
+        <div class="cursor-prompt-actions">
+          <div>
+            <strong>Cursor handoff prompt</strong>
+            <p class="footer-note">Paste this into Cursor so it knows what this C.R.A.P. captured and where the saved folder lives.</p>
+          </div>
+          <button type="button" id="copyCursorPrompt" class="primary">Copy Cursor Prompt</button>
+        </div>
+        <textarea id="cursorPromptText" readonly spellcheck="false"></textarea>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="annotation-modal" id="annotationModal" aria-hidden="true">
+    <div class="annotation-toolbar">
+      <div>
+        <strong>Annotate Screenshot</strong>
+        <p class="footer-note">Add movable text, shapes, arrows, or freehand marks. Use Move to drag or resize selected marks.</p>
+      </div>
+      <div class="annotation-tools">
+        <button type="button" id="annotateMove" class="active">Move</button>
+        <button type="button" id="annotateDraw">Draw</button>
+        <button type="button" id="annotateText">Text</button>
+        <button type="button" id="annotateRect">Rectangle</button>
+        <button type="button" id="annotateEllipse">Circle</button>
+        <button type="button" id="annotateArrow">Arrow</button>
+        <label>Color <input type="color" id="annotateColor" value="#ff3366" /></label>
+        <label>Size <input type="range" id="annotateSize" min="2" max="96" value="5" /></label>
+        <button type="button" id="annotateUndo">Undo</button>
+        <button type="button" id="annotateDelete" class="danger">Delete Selected</button>
+        <button type="button" id="annotateClear">Clear Marks</button>
+        <button type="button" id="annotateSave" class="primary">Save to Section</button>
+        <button type="button" id="annotateCancel" class="danger">Cancel</button>
+      </div>
+    </div>
+    <div class="annotation-canvas-wrap">
+      <canvas class="annotation-canvas" id="annotationCanvas"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "codebase-review-action-planner-v1";
+    const DRAWER_WIDTH_KEY = "crap-drawer-width-v1";
+    const THEME_KEY = "crap-theme-v1";
+    const ARTIFACT_TOKEN = localStorage.getItem("crap-review-token-v1") || "";
+    const DEFAULT_APP_URL = "http://localhost:3000";
+    const MAX_SCREENSHOTS_PER_SECTION = 4;
+
+    let sections = [];
+    let activeSectionId = null;
+    let appDrawerLoaded = false;
+    let drawerResizeActive = false;
+    let selectionMode = false;
+    let boxSelectMode = false;
+    let boxDragStart = null;
+    let boxDraftRect = null;
+    let highlightedElement = null;
+    let siteLocked = false;
+    let annotationTargetSectionId = null;
+    let annotationBaseImage = null;
+    let annotationMode = "draw";
+    let annotationDrawing = false;
+    let annotationUndoStack = [];
+    let annotationDefaultNote = "Captured and annotated from the review board.";
+    let annotationFilePrefix = "annotated";
+    let annotationMarks = [];
+    let annotationSelectedId = null;
+    let annotationPointerAction = null;
+    let annotationPointerStart = null;
+    let annotationOriginalMark = null;
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    function applyTheme(theme) {
+      const next = theme === "dark" ? "dark" : "light";
+      document.documentElement.dataset.theme = next;
+      document.getElementById("themeToggle").textContent = next === "dark" ? "Light Mode" : "Dark Mode";
+      localStorage.setItem(THEME_KEY, next);
+    }
+
+    function loadTheme() {
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === "dark" || saved === "light") {
+        applyTheme(saved);
+        return;
+      }
+      const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
+      applyTheme(prefersDark ? "dark" : "light");
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      applyTheme(current === "dark" ? "light" : "dark");
+    }
+
+    function siteInputValue() {
+      return document.getElementById("siteInput").value.trim() || DEFAULT_APP_URL;
+    }
+
+    function normalizeSiteUrl(value) {
+      const raw = String(value || "").trim() || DEFAULT_APP_URL;
+      const withScheme = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(raw) ? raw : `https://${raw}`;
+      try {
+        return new URL(withScheme, window.location.origin).href;
+      } catch {
+        return DEFAULT_APP_URL;
+      }
+    }
+
+    function currentDrawerUrl() {
+      return normalizeSiteUrl(siteInputValue());
+    }
+
+    function applySiteLockState() {
+      const input = document.getElementById("siteInput");
+      const button = document.getElementById("siteLockButton");
+      input.disabled = siteLocked;
+      button.textContent = siteLocked ? "Change Site" : "Load / Lock";
+      button.classList.toggle("active", siteLocked);
+    }
+
+    function loadAndLockSite() {
+      const input = document.getElementById("siteInput");
+      if (siteLocked) {
+        siteLocked = false;
+        applySiteLockState();
+        saveState();
+        input.focus();
+        showToast("Site unlocked");
+        return;
+      }
+      const url = normalizeSiteUrl(input.value);
+      input.value = url;
+      siteLocked = true;
+      applySiteLockState();
+      saveState();
+      openAppDrawer(url);
+      showToast("Site loaded and locked");
+    }
+
+    function makeId() {
+      return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+    }
+
+    function markdownEscape(text) {
+      return String(text || "").replace(/\r\n/g, "\n").trim();
+    }
+
+    function getMetadata() {
+      const metadata = {};
+      document.querySelectorAll("[data-meta]").forEach((input) => {
+        metadata[input.dataset.meta] = input.value || "";
+      });
+      return metadata;
+    }
+
+    function getFinalFields() {
+      const final = {};
+      document.querySelectorAll("[data-final]").forEach((input) => {
+        final[input.dataset.final] = input.value || "";
+      });
+      final["Captured section count"] = String(sections.length);
+      return final;
+    }
+
+    function storageSnapshot() {
+      return {
+        metadata: getMetadata(),
+        final: getFinalFields(),
+        sections: sections.map((section) => ({
+          id: section.id,
+          title: section.title,
+          notes: section.notes,
+          reviewed: section.reviewed,
+          element: section.element,
+          createdAt: section.createdAt,
+        })),
+        siteLocked,
+      };
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(storageSnapshot()));
+    }
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        applySiteLockState();
+        return;
+      }
+      try {
+        const state = JSON.parse(raw);
+        document.querySelectorAll("[data-meta]").forEach((input) => {
+          if (state.metadata && input.dataset.meta in state.metadata) input.value = state.metadata[input.dataset.meta] || "";
+        });
+        document.querySelectorAll("[data-final]").forEach((input) => {
+          if (state.final && input.dataset.final in state.final) input.value = state.final[input.dataset.final] || "";
+        });
+        sections = Array.isArray(state.sections)
+          ? state.sections.map((section) => ({ ...section, screenshots: [] }))
+          : [];
+        siteLocked = Boolean(state.siteLocked);
+        applySiteLockState();
+      } catch {
+        sections = [];
+      }
+      applySiteLockState();
+    }
+
+    function createSectionFromElement(element, frameElement = null) {
+      const label = element.label || element.text || element.selector || element.tag || "Selected element";
+      const section = {
+        id: makeId(),
+        title: `Element: ${label}`.slice(0, 180),
+        notes: "",
+        reviewed: false,
+        element,
+        screenshots: [],
+        createdAt: new Date().toISOString(),
+      };
+      sections.unshift(section);
+      activeSectionId = section.id;
+      if (frameElement) keepSelectedElementHighlighted(frameElement, section.id);
+      renderSections();
+      saveState();
+      showToast("Section created from selected element");
+    }
+
+    function createManualSection() {
+      const section = {
+        id: makeId(),
+        title: "Blank review section",
+        notes: "",
+        reviewed: false,
+        element: {
+          source: "manual",
+          url: appFrameUrl(),
+          selector: "",
+          tag: "",
+          label: "",
+          text: "",
+          rect: null,
+        },
+        screenshots: [],
+        createdAt: new Date().toISOString(),
+      };
+      sections.unshift(section);
+      activeSectionId = section.id;
+      renderSections();
+      saveState();
+    }
+
+    function createSectionFromBox(rect) {
+      const section = {
+        id: makeId(),
+        title: `Box selection: ${rect.width}x${rect.height} at ${rect.x},${rect.y}`,
+        notes: "",
+        reviewed: false,
+        element: {
+          source: "overlay-box-select",
+          url: appFrameUrl(),
+          selector: "",
+          tag: "screen-region",
+          label: "Overlay box selection",
+          text: "",
+          rect,
+        },
+        screenshots: [],
+        createdAt: new Date().toISOString(),
+      };
+      sections.unshift(section);
+      activeSectionId = section.id;
+      renderSections();
+      renderPersistentBoxSelections();
+      saveState();
+      showToast("Section created from selected screen box");
+      return section;
+    }
+
+    function sectionById(id) {
+      return sections.find((section) => section.id === id);
+    }
+
+    function sectionDetailsText(section) {
+      return JSON.stringify(section.element || {}, null, 2);
+    }
+
+    function renderSections() {
+      const root = document.getElementById("sectionsRoot");
+      const empty = document.getElementById("emptyState");
+      root.innerHTML = "";
+      empty.style.display = sections.length ? "none" : "block";
+
+      sections.forEach((section, index) => {
+        const card = document.createElement("section");
+        card.className = "capture-section";
+        card.dataset.sectionId = section.id;
+
+        const head = document.createElement("div");
+        head.className = "section-head";
+
+        const titleWrap = document.createElement("label");
+        titleWrap.className = "field";
+        titleWrap.textContent = `Section ${index + 1}`;
+        const title = document.createElement("input");
+        title.className = "section-title-input";
+        title.type = "text";
+        title.value = section.title;
+        title.addEventListener("input", () => {
+          section.title = title.value;
+          saveState();
+        });
+        titleWrap.appendChild(title);
+
+        const actions = document.createElement("div");
+        actions.className = "row-actions";
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "danger";
+        remove.textContent = "Remove Section";
+        remove.addEventListener("click", () => {
+          removeSelectedElementHighlight(section);
+          sections = sections.filter((item) => item.id !== section.id);
+          if (activeSectionId === section.id) activeSectionId = null;
+          renderSections();
+          renderPersistentBoxSelections();
+          saveState();
+        });
+        actions.appendChild(remove);
+
+        head.appendChild(titleWrap);
+        head.appendChild(actions);
+        card.appendChild(head);
+
+        const reviewed = document.createElement("label");
+        reviewed.className = "review-row";
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = Boolean(section.reviewed);
+        checkbox.addEventListener("change", () => {
+          section.reviewed = checkbox.checked;
+          saveState();
+        });
+        reviewed.appendChild(checkbox);
+        reviewed.appendChild(document.createTextNode("Reviewed this selected element"));
+        card.appendChild(reviewed);
+
+        const details = document.createElement("div");
+        details.className = "element-details";
+        details.innerHTML = "<strong>Selected element details</strong>";
+        const pre = document.createElement("pre");
+        pre.textContent = sectionDetailsText(section);
+        details.appendChild(pre);
+        card.appendChild(details);
+
+        const notes = document.createElement("label");
+        notes.className = "field";
+        notes.textContent = "Comments";
+        const textarea = document.createElement("textarea");
+        textarea.placeholder = "What looks right or wrong about this selected element?";
+        textarea.value = section.notes || "";
+        textarea.addEventListener("input", () => {
+          section.notes = textarea.value;
+          saveState();
+        });
+        notes.appendChild(textarea);
+        card.appendChild(notes);
+
+        card.appendChild(renderScreenshotCapture(section));
+        root.appendChild(card);
+      });
+    }
+
+    function renderScreenshotCapture(section) {
+      const area = document.createElement("div");
+      area.className = `screenshot-capture${activeSectionId === section.id ? " active" : ""}`;
+      area.tabIndex = 0;
+      area.dataset.sectionId = section.id;
+
+      const top = document.createElement("div");
+      top.className = "capture-top";
+      const copy = document.createElement("div");
+      const title = document.createElement("p");
+      title.className = "capture-title";
+      title.textContent = "Screenshots";
+      const badge = document.createElement("span");
+      badge.className = `capture-badge${section.screenshots.length ? " complete" : ""}`;
+      badge.textContent = section.screenshots.length
+        ? `${section.screenshots.length}/${MAX_SCREENSHOTS_PER_SECTION} added`
+        : `0/${MAX_SCREENSHOTS_PER_SECTION} missing`;
+      title.appendChild(badge);
+      const help = document.createElement("p");
+      help.className = "capture-help";
+      help.textContent = "Box Select can add a cropped screenshot here automatically. You can also capture, annotate, paste, or choose images.";
+      copy.appendChild(title);
+      copy.appendChild(help);
+
+      const controls = document.createElement("div");
+      controls.className = "row-actions";
+      const capture = document.createElement("button");
+      capture.type = "button";
+      capture.textContent = "Capture + Annotate";
+      capture.addEventListener("click", () => {
+        setActiveSection(section.id);
+        openAnnotationCapture(section.id);
+      });
+      const choose = document.createElement("button");
+      choose.type = "button";
+      choose.textContent = "Choose Images";
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/png,image/jpeg,image/webp,image/gif";
+      input.multiple = true;
+      input.hidden = true;
+      choose.addEventListener("click", () => {
+        setActiveSection(section.id);
+        input.click();
+      });
+      input.addEventListener("change", () => {
+        Array.from(input.files || []).forEach((file) => addScreenshotFile(section.id, file));
+        input.value = "";
+      });
+      controls.appendChild(capture);
+      controls.appendChild(choose);
+      controls.appendChild(input);
+
+      top.appendChild(copy);
+      top.appendChild(controls);
+      area.appendChild(top);
+
+      const list = document.createElement("div");
+      list.className = "screenshot-list";
+      if (!section.screenshots.length) {
+        const empty = document.createElement("div");
+        empty.className = "screenshot-empty";
+        empty.textContent = "No screenshot yet. Click here, take a screenshot, then paste it into this section.";
+        list.appendChild(empty);
+      } else {
+        section.screenshots.forEach((screenshot, screenshotIndex) => {
+          list.appendChild(renderScreenshotCard(section, screenshot, screenshotIndex));
+        });
+      }
+      area.appendChild(list);
+
+      area.addEventListener("click", () => setActiveSection(section.id));
+      area.addEventListener("focus", () => setActiveSection(section.id));
+      return area;
+    }
+
+    function renderScreenshotCard(section, screenshot, index) {
+      const card = document.createElement("div");
+      card.className = "screenshot-card";
+      const img = document.createElement("img");
+      img.src = screenshot.dataUrl;
+      img.alt = screenshot.name;
+
+      const meta = document.createElement("div");
+      meta.className = "screenshot-meta";
+      const name = document.createElement("div");
+      name.className = "screenshot-name";
+      name.textContent = `${index + 1}/${MAX_SCREENSHOTS_PER_SECTION}. ${screenshot.name}`;
+      const note = document.createElement("textarea");
+      note.placeholder = "Annotation note for this screenshot";
+      note.value = screenshot.note || "";
+      note.addEventListener("input", () => {
+        screenshot.note = note.value;
+      });
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "danger";
+      remove.textContent = "Remove this screenshot";
+      remove.addEventListener("click", () => {
+        section.screenshots = section.screenshots.filter((item) => item.id !== screenshot.id);
+        renderSections();
+        showToast("Screenshot removed");
+      });
+      meta.appendChild(name);
+      meta.appendChild(note);
+      meta.appendChild(remove);
+      card.appendChild(img);
+      card.appendChild(meta);
+      return card;
+    }
+
+    function setActiveSection(id) {
+      activeSectionId = id;
+      document.querySelectorAll(".screenshot-capture").forEach((area) => {
+        area.classList.toggle("active", area.dataset.sectionId === id);
+      });
+    }
+
+    function addScreenshotFile(sectionId, file) {
+      const section = sectionById(sectionId);
+      if (!section) return;
+      if (!file || !file.type.startsWith("image/")) {
+        showToast("Clipboard item was not an image");
+        return;
+      }
+      if (section.screenshots.length >= MAX_SCREENSHOTS_PER_SECTION) {
+        showToast("Limit is 4 screenshots per section");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (section.screenshots.length >= MAX_SCREENSHOTS_PER_SECTION) {
+          showToast("Limit is 4 screenshots per section");
+          return;
+        }
+        section.screenshots.push({
+          id: makeId(),
+          name: file.name || `clipboard-${new Date().toISOString()}.png`,
+          mime: file.type || "image/png",
+          dataUrl: String(reader.result || ""),
+          note: "",
+        });
+        renderSections();
+        setActiveSection(section.id);
+        showToast("Screenshot added");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function addScreenshotDataUrl(sectionId, dataUrl, name, note = "") {
+      const section = sectionById(sectionId);
+      if (!section) return false;
+      if (section.screenshots.length >= MAX_SCREENSHOTS_PER_SECTION) {
+        showToast("Limit is 4 screenshots per section");
+        return false;
+      }
+      section.screenshots.push({
+        id: makeId(),
+        name,
+        mime: "image/png",
+        dataUrl,
+        note,
+      });
+      renderSections();
+      setActiveSection(section.id);
+      showToast("Annotated screenshot saved");
+      return true;
+    }
+
+    function clampNumber(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    async function nextPaint() {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    }
+
+    function cropRegionFromViewport(video, viewportRect) {
+      const videoWidth = video.videoWidth || window.innerWidth || 1280;
+      const videoHeight = video.videoHeight || window.innerHeight || 720;
+      const scaleX = videoWidth / Math.max(1, window.innerWidth);
+      const scaleY = videoHeight / Math.max(1, window.innerHeight);
+      const x = clampNumber(Math.round(viewportRect.x * scaleX), 0, videoWidth - 1);
+      const y = clampNumber(Math.round(viewportRect.y * scaleY), 0, videoHeight - 1);
+      const maxWidth = videoWidth - x;
+      const maxHeight = videoHeight - y;
+      return {
+        x,
+        y,
+        width: clampNumber(Math.round(viewportRect.width * scaleX), 1, maxWidth),
+        height: clampNumber(Math.round(viewportRect.height * scaleY), 1, maxHeight),
+      };
+    }
+
+    function screenCaptureOptions() {
+      return {
+        video: {
+          displaySurface: "browser",
+        },
+        audio: false,
+        preferCurrentTab: true,
+        selfBrowserSurface: "include",
+        surfaceSwitching: "include",
+      };
+    }
+
+    async function openAnnotationCapture(sectionId, options = {}) {
+      const section = sectionById(sectionId);
+      if (!section) return;
+      if (section.screenshots.length >= MAX_SCREENSHOTS_PER_SECTION) {
+        showToast("Limit is 4 screenshots per section");
+        return;
+      }
+      if (!navigator.mediaDevices?.getDisplayMedia) {
+        showToast("Screen capture is not available in this browser");
+        return;
+      }
+      let stream;
+      try {
+        if (options.cropViewportRect) {
+          showToast("Choose This Tab / C.R.A.P.; the selected box will be cropped");
+        }
+        stream = await navigator.mediaDevices.getDisplayMedia(screenCaptureOptions());
+      } catch {
+        showToast("Screenshot capture cancelled");
+        return;
+      }
+
+      const boxLayer = document.getElementById("boxSelectLayer");
+      const previousLayerVisibility = boxLayer.style.visibility;
+      try {
+        if (options.hideBoxLayerDuringCapture) {
+          boxLayer.style.visibility = "hidden";
+          await nextPaint();
+        }
+        const video = document.createElement("video");
+        video.srcObject = stream;
+        video.muted = true;
+        await video.play();
+        await new Promise((resolve) => {
+          if (video.readyState >= 2) resolve();
+          else video.onloadedmetadata = resolve;
+        });
+        const canvas = document.getElementById("annotationCanvas");
+        const source = options.cropViewportRect
+          ? cropRegionFromViewport(video, options.cropViewportRect)
+          : { x: 0, y: 0, width: video.videoWidth || 1280, height: video.videoHeight || 720 };
+        const width = Math.max(1, source.width);
+        const height = Math.max(1, source.height);
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, source.x, source.y, source.width, source.height, 0, 0, width, height);
+        annotationBaseImage = ctx.getImageData(0, 0, width, height);
+        annotationMarks = [];
+        annotationSelectedId = null;
+        annotationUndoStack = [annotationMarksSnapshot()];
+        annotationTargetSectionId = sectionId;
+        annotationDefaultNote = options.note || "Captured and annotated from the review board.";
+        annotationFilePrefix = options.namePrefix || "annotated";
+        setAnnotationMode("move");
+        renderAnnotationCanvas();
+        document.getElementById("annotationModal").classList.add("open");
+        document.getElementById("annotationModal").setAttribute("aria-hidden", "false");
+      } finally {
+        boxLayer.style.visibility = previousLayerVisibility;
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    }
+
+    function annotationCanvasPoint(event) {
+      const canvas = document.getElementById("annotationCanvas");
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (event.clientX - rect.left) * (canvas.width / rect.width),
+        y: (event.clientY - rect.top) * (canvas.height / rect.height),
+      };
+    }
+
+    function annotationMarksSnapshot() {
+      return JSON.stringify(annotationMarks);
+    }
+
+    function cloneAnnotationMark(mark) {
+      return JSON.parse(JSON.stringify(mark));
+    }
+
+    function selectedAnnotationMark() {
+      return annotationMarks.find((mark) => mark.id === annotationSelectedId) || null;
+    }
+
+    function pushAnnotationUndo() {
+      annotationUndoStack.push(annotationMarksSnapshot());
+      if (annotationUndoStack.length > 40) annotationUndoStack.shift();
+    }
+
+    function annotationColor() {
+      return document.getElementById("annotateColor").value || "#ff3366";
+    }
+
+    function annotationSize() {
+      return Number(document.getElementById("annotateSize").value) || 5;
+    }
+
+    function hexToRgba(hex, alpha) {
+      const clean = String(hex || "#ff3366").replace("#", "");
+      const value = clean.length === 3
+        ? clean.split("").map((part) => part + part).join("")
+        : clean.padEnd(6, "0").slice(0, 6);
+      const num = Number.parseInt(value, 16);
+      const r = (num >> 16) & 255;
+      const g = (num >> 8) & 255;
+      const b = num & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function normalizeRectValues(x, y, width, height) {
+      return {
+        x: width < 0 ? x + width : x,
+        y: height < 0 ? y + height : y,
+        width: Math.abs(width),
+        height: Math.abs(height),
+      };
+    }
+
+    function textBounds(mark) {
+      const canvas = document.getElementById("annotationCanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.save();
+      ctx.font = `${mark.size}px ${getComputedStyle(document.body).fontFamily}`;
+      const width = Math.max(24, ctx.measureText(mark.text || "").width);
+      ctx.restore();
+      return { x: mark.x, y: mark.y - mark.size * 1.1, width, height: mark.size * 1.35 };
+    }
+
+    function annotationBounds(mark) {
+      const pad = Math.max(8, mark.size || 5);
+      if (mark.type === "path") {
+        const xs = mark.points.map((point) => point.x);
+        const ys = mark.points.map((point) => point.y);
+        return {
+          x: Math.min(...xs) - pad,
+          y: Math.min(...ys) - pad,
+          width: Math.max(1, Math.max(...xs) - Math.min(...xs) + pad * 2),
+          height: Math.max(1, Math.max(...ys) - Math.min(...ys) + pad * 2),
+        };
+      }
+      if (mark.type === "text") return textBounds(mark);
+      if (mark.type === "arrow") {
+        const x = Math.min(mark.x1, mark.x2) - pad;
+        const y = Math.min(mark.y1, mark.y2) - pad;
+        return {
+          x,
+          y,
+          width: Math.max(1, Math.abs(mark.x2 - mark.x1) + pad * 2),
+          height: Math.max(1, Math.abs(mark.y2 - mark.y1) + pad * 2),
+        };
+      }
+      return normalizeRectValues(mark.x, mark.y, mark.width, mark.height);
+    }
+
+    function resizeHandleBounds(bounds) {
+      return {
+        x: bounds.x + bounds.width - 9,
+        y: bounds.y + bounds.height - 9,
+        width: 18,
+        height: 18,
+      };
+    }
+
+    function pointInRect(point, rect, padding = 0) {
+      return point.x >= rect.x - padding
+        && point.x <= rect.x + rect.width + padding
+        && point.y >= rect.y - padding
+        && point.y <= rect.y + rect.height + padding;
+    }
+
+    function hitTestAnnotation(point) {
+      for (let index = annotationMarks.length - 1; index >= 0; index -= 1) {
+        const mark = annotationMarks[index];
+        if (pointInRect(point, annotationBounds(mark), 8)) return mark;
+      }
+      return null;
+    }
+
+    function renderArrowHead(ctx, mark) {
+      const angle = Math.atan2(mark.y2 - mark.y1, mark.x2 - mark.x1);
+      const length = Math.max(12, mark.size * 4);
+      ctx.beginPath();
+      ctx.moveTo(mark.x2, mark.y2);
+      ctx.lineTo(mark.x2 - length * Math.cos(angle - Math.PI / 6), mark.y2 - length * Math.sin(angle - Math.PI / 6));
+      ctx.moveTo(mark.x2, mark.y2);
+      ctx.lineTo(mark.x2 - length * Math.cos(angle + Math.PI / 6), mark.y2 - length * Math.sin(angle + Math.PI / 6));
+      ctx.stroke();
+    }
+
+    function renderAnnotationMark(ctx, mark) {
+      ctx.save();
+      ctx.strokeStyle = mark.color;
+      ctx.fillStyle = mark.color;
+      ctx.lineWidth = mark.size;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      if (mark.type === "path") {
+        ctx.beginPath();
+        mark.points.forEach((point, index) => {
+          if (index === 0) ctx.moveTo(point.x, point.y);
+          else ctx.lineTo(point.x, point.y);
+        });
+        ctx.stroke();
+      } else if (mark.type === "text") {
+        ctx.font = `${mark.size}px ${getComputedStyle(document.body).fontFamily}`;
+        ctx.lineWidth = Math.max(3, mark.size / 7);
+        ctx.strokeStyle = "#ffffff";
+        ctx.strokeText(mark.text, mark.x, mark.y);
+        ctx.fillStyle = mark.color;
+        ctx.fillText(mark.text, mark.x, mark.y);
+      } else if (mark.type === "rect") {
+        const rect = normalizeRectValues(mark.x, mark.y, mark.width, mark.height);
+        ctx.fillStyle = hexToRgba(mark.color, 0.14);
+        ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+        ctx.strokeStyle = mark.color;
+        ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
+      } else if (mark.type === "ellipse") {
+        const rect = normalizeRectValues(mark.x, mark.y, mark.width, mark.height);
+        ctx.beginPath();
+        ctx.ellipse(rect.x + rect.width / 2, rect.y + rect.height / 2, Math.max(1, rect.width / 2), Math.max(1, rect.height / 2), 0, 0, Math.PI * 2);
+        ctx.fillStyle = hexToRgba(mark.color, 0.14);
+        ctx.fill();
+        ctx.strokeStyle = mark.color;
+        ctx.stroke();
+      } else if (mark.type === "arrow") {
+        ctx.beginPath();
+        ctx.moveTo(mark.x1, mark.y1);
+        ctx.lineTo(mark.x2, mark.y2);
+        ctx.stroke();
+        renderArrowHead(ctx, mark);
+      }
+      ctx.restore();
+    }
+
+    function renderSelection(ctx, mark) {
+      const bounds = annotationBounds(mark);
+      const handle = resizeHandleBounds(bounds);
+      ctx.save();
+      ctx.setLineDash([8, 5]);
+      ctx.strokeStyle = "#00ffd5";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#00ffd5";
+      ctx.strokeStyle = "#031017";
+      ctx.lineWidth = 2;
+      ctx.fillRect(handle.x, handle.y, handle.width, handle.height);
+      ctx.strokeRect(handle.x, handle.y, handle.width, handle.height);
+      ctx.restore();
+    }
+
+    function renderAnnotationCanvas(showSelection = true) {
+      const canvas = document.getElementById("annotationCanvas");
+      const ctx = canvas.getContext("2d");
+      if (annotationBaseImage) ctx.putImageData(annotationBaseImage, 0, 0);
+      annotationMarks.forEach((mark) => renderAnnotationMark(ctx, mark));
+      const selected = selectedAnnotationMark();
+      if (showSelection && selected) renderSelection(ctx, selected);
+    }
+
+    function moveAnnotationMark(mark, dx, dy) {
+      if (mark.type === "path") {
+        mark.points.forEach((point) => {
+          point.x += dx;
+          point.y += dy;
+        });
+      } else if (mark.type === "arrow") {
+        mark.x1 += dx;
+        mark.y1 += dy;
+        mark.x2 += dx;
+        mark.y2 += dy;
+      } else {
+        mark.x += dx;
+        mark.y += dy;
+      }
+    }
+
+    function resizeAnnotationMark(mark, originalMark, startPoint, currentPoint) {
+      const dx = currentPoint.x - startPoint.x;
+      const dy = currentPoint.y - startPoint.y;
+      if (mark.type === "text") {
+        mark.size = clampNumber(Math.round(originalMark.size + Math.max(dx, dy) / 2), 8, 160);
+      } else if (mark.type === "rect" || mark.type === "ellipse") {
+        mark.width = Math.max(4, originalMark.width + dx);
+        mark.height = Math.max(4, originalMark.height + dy);
+      } else if (mark.type === "arrow") {
+        mark.x2 = originalMark.x2 + dx;
+        mark.y2 = originalMark.y2 + dy;
+        mark.size = clampNumber(Math.round(originalMark.size + Math.max(dx, dy) / 24), 2, 40);
+      } else if (mark.type === "path") {
+        const bounds = annotationBounds(originalMark);
+        const scale = Math.max(0.2, Math.max((bounds.width + dx) / Math.max(1, bounds.width), (bounds.height + dy) / Math.max(1, bounds.height)));
+        mark.points = originalMark.points.map((point) => ({
+          x: bounds.x + (point.x - bounds.x) * scale,
+          y: bounds.y + (point.y - bounds.y) * scale,
+        }));
+        mark.size = clampNumber(Math.round(originalMark.size * scale), 1, 60);
+      }
+    }
+
+    function createShapeMark(type, point) {
+      if (type === "arrow") {
+        return { id: makeId(), type, color: annotationColor(), size: annotationSize(), x1: point.x, y1: point.y, x2: point.x, y2: point.y };
+      }
+      return { id: makeId(), type, color: annotationColor(), size: annotationSize(), x: point.x, y: point.y, width: 1, height: 1 };
+    }
+
+    function startAnnotationDraw(event) {
+      const canvas = document.getElementById("annotationCanvas");
+      const point = annotationCanvasPoint(event);
+      annotationPointerStart = point;
+      annotationPointerAction = null;
+      annotationOriginalMark = null;
+      if (annotationMode === "text") {
+        const text = prompt("Text annotation");
+        if (!text) return;
+        pushAnnotationUndo();
+        const mark = { id: makeId(), type: "text", text, x: point.x, y: point.y, color: annotationColor(), size: Math.max(12, annotationSize() * 5) };
+        annotationMarks.push(mark);
+        annotationSelectedId = mark.id;
+        setAnnotationMode("move");
+        renderAnnotationCanvas();
+        return;
+      }
+      if (annotationMode === "move") {
+        const selected = selectedAnnotationMark();
+        if (selected && pointInRect(point, resizeHandleBounds(annotationBounds(selected)))) {
+          pushAnnotationUndo();
+          annotationPointerAction = "resize";
+          annotationOriginalMark = cloneAnnotationMark(selected);
+          annotationDrawing = true;
+        } else {
+          const hit = hitTestAnnotation(point);
+          annotationSelectedId = hit?.id || null;
+          if (hit) {
+            pushAnnotationUndo();
+            annotationPointerAction = "move";
+            annotationOriginalMark = cloneAnnotationMark(hit);
+            annotationDrawing = true;
+          }
+        }
+        renderAnnotationCanvas();
+        if (annotationDrawing) canvas.setPointerCapture?.(event.pointerId);
+        return;
+      }
+      pushAnnotationUndo();
+      let mark;
+      if (annotationMode === "draw") {
+        mark = { id: makeId(), type: "path", color: annotationColor(), size: annotationSize(), points: [point] };
+        annotationPointerAction = "draw";
+      } else {
+        mark = createShapeMark(annotationMode === "circle" ? "ellipse" : annotationMode, point);
+        annotationPointerAction = "shape";
+      }
+      annotationMarks.push(mark);
+      annotationSelectedId = mark.id;
+      annotationDrawing = true;
+      canvas.setPointerCapture?.(event.pointerId);
+      renderAnnotationCanvas();
+    }
+
+    function moveAnnotationDraw(event) {
+      if (!annotationDrawing || !annotationPointerAction) return;
+      const point = annotationCanvasPoint(event);
+      const mark = selectedAnnotationMark();
+      if (!mark) return;
+      if (annotationPointerAction === "draw") {
+        mark.points.push(point);
+      } else if (annotationPointerAction === "shape") {
+        if (mark.type === "arrow") {
+          mark.x2 = point.x;
+          mark.y2 = point.y;
+        } else {
+          mark.width = point.x - mark.x;
+          mark.height = point.y - mark.y;
+        }
+      } else if (annotationPointerAction === "move" && annotationOriginalMark) {
+        Object.assign(mark, cloneAnnotationMark(annotationOriginalMark));
+        moveAnnotationMark(mark, point.x - annotationPointerStart.x, point.y - annotationPointerStart.y);
+      } else if (annotationPointerAction === "resize" && annotationOriginalMark) {
+        Object.assign(mark, cloneAnnotationMark(annotationOriginalMark));
+        resizeAnnotationMark(mark, annotationOriginalMark, annotationPointerStart, point);
+      }
+      renderAnnotationCanvas();
+    }
+
+    function stopAnnotationDraw(event) {
+      if (!annotationDrawing) return;
+      const mark = selectedAnnotationMark();
+      if (mark && (mark.type === "rect" || mark.type === "ellipse")) {
+        const rect = normalizeRectValues(mark.x, mark.y, mark.width, mark.height);
+        Object.assign(mark, rect);
+      }
+      annotationDrawing = false;
+      annotationPointerAction = null;
+      annotationPointerStart = null;
+      annotationOriginalMark = null;
+      document.getElementById("annotationCanvas").releasePointerCapture?.(event.pointerId);
+      renderAnnotationCanvas();
+    }
+
+    function setAnnotationMode(mode) {
+      annotationMode = mode;
+      ["Move", "Draw", "Text", "Rect", "Ellipse", "Arrow"].forEach((name) => {
+        const id = `annotate${name}`;
+        const button = document.getElementById(id);
+        if (button) button.classList.toggle("active", mode === name.toLowerCase());
+      });
+      if (mode !== "move") annotationSelectedId = null;
+      renderAnnotationCanvas();
+    }
+
+    function undoAnnotation() {
+      if (annotationUndoStack.length <= 1) return;
+      annotationUndoStack.pop();
+      annotationMarks = JSON.parse(annotationUndoStack[annotationUndoStack.length - 1] || "[]");
+      annotationSelectedId = null;
+      renderAnnotationCanvas();
+    }
+
+    function deleteSelectedAnnotation() {
+      if (!annotationSelectedId) {
+        showToast("Select a mark first");
+        return;
+      }
+      pushAnnotationUndo();
+      annotationMarks = annotationMarks.filter((mark) => mark.id !== annotationSelectedId);
+      annotationSelectedId = null;
+      renderAnnotationCanvas();
+      showToast("Selected mark deleted");
+    }
+
+    function clearAnnotationMarks() {
+      if (!annotationBaseImage) return;
+      if (annotationMarks.length) pushAnnotationUndo();
+      annotationMarks = [];
+      annotationSelectedId = null;
+      renderAnnotationCanvas();
+    }
+
+    function updateSelectedAnnotationColor() {
+      const selected = selectedAnnotationMark();
+      if (!selected) return;
+      pushAnnotationUndo();
+      selected.color = annotationColor();
+      renderAnnotationCanvas();
+    }
+
+    function updateSelectedAnnotationSize() {
+      const selected = selectedAnnotationMark();
+      if (!selected) return;
+      pushAnnotationUndo();
+      if (selected.type === "text") selected.size = Math.max(8, annotationSize() * 5);
+      else selected.size = annotationSize();
+      renderAnnotationCanvas();
+    }
+
+    function closeAnnotationModal() {
+      annotationDrawing = false;
+      annotationTargetSectionId = null;
+      annotationBaseImage = null;
+      annotationMarks = [];
+      annotationSelectedId = null;
+      annotationPointerAction = null;
+      annotationPointerStart = null;
+      annotationOriginalMark = null;
+      annotationUndoStack = [];
+      annotationDefaultNote = "Captured and annotated from the review board.";
+      annotationFilePrefix = "annotated";
+      document.getElementById("annotationModal").classList.remove("open");
+      document.getElementById("annotationModal").setAttribute("aria-hidden", "true");
+    }
+
+    function saveAnnotatedScreenshot() {
+      if (!annotationTargetSectionId) return;
+      renderAnnotationCanvas(false);
+      const canvas = document.getElementById("annotationCanvas");
+      const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const saved = addScreenshotDataUrl(
+        annotationTargetSectionId,
+        canvas.toDataURL("image/png"),
+        `${annotationFilePrefix}-${stamp}.png`,
+        annotationDefaultNote,
+      );
+      if (saved) closeAnnotationModal();
+      else renderAnnotationCanvas();
+    }
+
+    function collectSections() {
+      return sections.map((section) => ({
+        title: section.title || "Untitled selected element",
+        prompt: sectionDetailsText(section),
+        checks: [{ text: "Reviewed selected element", checked: Boolean(section.reviewed) }],
+        notes: section.notes || "",
+        screenshots: section.screenshots.map((screenshot) => ({
+          section: section.title,
+          name: screenshot.name,
+          mime: screenshot.mime,
+          note: screenshot.note || "",
+          dataBase64: screenshot.dataUrl.split(",")[1] || "",
+        })),
+      }));
+    }
+
+    function buildReviewPayload() {
+      return {
+        token: ARTIFACT_TOKEN,
+        artifact: "app-element-review",
+        metadata: getMetadata(),
+        sections: collectSections(),
+        final: getFinalFields(),
+        markdown: buildMarkdown(),
+      };
+    }
+
+    function buildMarkdown() {
+      const metadata = getMetadata();
+      const final = getFinalFields();
+      const lines = [
+        "# C.R.A.P. Results",
+        "",
+        `- Tester: ${metadata.Tester || ""}`,
+        `- Date: ${metadata.Date || ""}`,
+        `- Browser: ${metadata.Browser || ""}`,
+        `- Site: ${metadata.Site || DEFAULT_APP_URL}`,
+        "",
+      ];
+      sections.forEach((section, index) => {
+        lines.push(`## ${index + 1}. ${section.title || "Untitled selected element"}`, "");
+        lines.push(`- Reviewed: ${section.reviewed ? "yes" : "no"}`);
+        lines.push(`- Created: ${section.createdAt || ""}`, "");
+        lines.push("Element details:", "", "```json", sectionDetailsText(section), "```", "");
+        lines.push("Comments:", markdownEscape(section.notes) || "None recorded", "");
+        section.screenshots.forEach((screenshot, screenshotIndex) => {
+          lines.push(`Screenshot ${screenshotIndex + 1}: ${screenshot.name}`);
+          if ((screenshot.note || "").trim()) lines.push(`Screenshot note: ${markdownEscape(screenshot.note)}`);
+          lines.push("");
+        });
+      });
+      lines.push("## Final Verdict", "");
+      lines.push(`Overall result: ${final["Overall result"] || ""}`, "");
+      lines.push("Top issues found:", markdownEscape(final["Top issues found"]) || "None recorded", "");
+      return lines.join("\n");
+    }
+
+    function sectionsMissingScreenshots() {
+      return sections.filter((section) => section.screenshots.length === 0).map((section) => section.title);
+    }
+
+    function setCursorPrompt(prompt) {
+      const panel = document.getElementById("cursorPromptPanel");
+      const text = document.getElementById("cursorPromptText");
+      const value = String(prompt || "").trim();
+      text.value = value;
+      panel.classList.toggle("open", Boolean(value));
+    }
+
+    async function saveReviewFolder() {
+      if (!sections.length) {
+        const ok = confirm("No selected elements have been captured yet. Save an empty review folder?");
+        if (!ok) return;
+      }
+      const missing = sectionsMissingScreenshots();
+      if (missing.length) {
+        const ok = confirm(`${missing.length} captured section(s) have no screenshot yet:\n\n${missing.join("\n")}\n\nSave anyway?`);
+        if (!ok) return;
+      }
+      const button = document.getElementById("saveReview");
+      const status = document.getElementById("saveStatus");
+      button.disabled = true;
+      status.textContent = "Saving this C.R.A.P....";
+      try {
+        const response = await fetch("/api/reviews", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(buildReviewPayload()),
+        });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(body.message || `Save failed (${response.status})`);
+        const reportTarget = body.ai_report_url || body.ai_report;
+        const manifestTarget = body.manifest_url || body.manifest;
+        const folderTarget = body.folder_url || body.folder;
+        const aiReport = reportTarget
+          ? ` AI report: ${reportTarget} (${body.ai_report_mode || "unknown"}).`
+          : "";
+        const promptTarget = body.cursor_prompt_url || body.cursor_prompt;
+        const promptNote = promptTarget ? ` Cursor prompt: ${promptTarget}.` : "";
+        status.textContent = `Saved this C.R.A.P. with ${body.screenshots} screenshot(s) to ${folderTarget}. Manifest: ${manifestTarget}.${aiReport}${promptNote}`;
+        setCursorPrompt(body.cursor_prompt_text || "");
+        showToast("This C.R.A.P. is saved");
+      } catch (error) {
+        status.textContent = error instanceof Error ? error.message : "Save failed";
+        setCursorPrompt("");
+        showToast("Save failed");
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    function appFrameUrl() {
+      const frame = document.getElementById("appFrame");
+      try {
+        return frame.contentWindow?.location?.href || frame.src || currentDrawerUrl();
+      } catch {
+        return frame.src || currentDrawerUrl();
+      }
+    }
+
+    function openAppDrawer(path = currentDrawerUrl()) {
+      const drawer = document.getElementById("appDrawer");
+      const frame = document.getElementById("appFrame");
+      if (!appDrawerLoaded || frame.src !== path) {
+        frame.src = path;
+        appDrawerLoaded = true;
+      }
+      drawer.classList.add("open");
+      drawer.setAttribute("aria-hidden", "false");
+      document.body.classList.add("app-drawer-open");
+      attachFrameInspectionWhenReady();
+      renderPersistentBoxSelections();
+      showToast("App drawer opened");
+    }
+
+    function closeAppDrawer() {
+      setSelectionMode(false);
+      setBoxSelectMode(false);
+      const drawer = document.getElementById("appDrawer");
+      drawer.classList.remove("open");
+      drawer.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("app-drawer-open");
+    }
+
+    function reloadAppDrawer() {
+      const frame = document.getElementById("appFrame");
+      if (!appDrawerLoaded) {
+        openAppDrawer();
+        return;
+      }
+      try {
+        frame.contentWindow?.location.reload();
+      } catch {
+        frame.src = frame.src || currentDrawerUrl();
+      }
+    }
+
+    function openNewChatInDrawer() {
+      appDrawerLoaded = false;
+      const url = new URL(currentDrawerUrl(), window.location.origin);
+      if (url.origin === window.location.origin) {
+        openAppDrawer(`${url.origin}/c/new?qa=${Date.now()}`);
+      } else {
+        openAppDrawer(url.href);
+      }
+    }
+
+    function popoutAppDrawer() {
+      window.open(appFrameUrl(), "_blank", "noopener,noreferrer");
+    }
+
+    function clampDrawerWidth(width) {
+      const min = Math.min(420, window.innerWidth - 24);
+      const max = Math.max(min, window.innerWidth - 280);
+      return Math.min(Math.max(width, min), max);
+    }
+
+    function syncDrawerWidthControl(width) {
+      const control = document.getElementById("drawerWidthRange");
+      if (!control) return;
+      control.min = String(Math.min(420, window.innerWidth - 24));
+      control.max = String(Math.max(Number(control.min), window.innerWidth - 280));
+      control.value = String(Math.round(clampDrawerWidth(width)));
+    }
+
+    function setDrawerWidth(width, persist = true) {
+      const next = Math.round(clampDrawerWidth(width));
+      document.documentElement.style.setProperty("--drawer-width", `${next}px`);
+      syncDrawerWidthControl(next);
+      if (persist) localStorage.setItem(DRAWER_WIDTH_KEY, String(next));
+    }
+
+    function loadDrawerWidth() {
+      const saved = Number(localStorage.getItem(DRAWER_WIDTH_KEY));
+      if (Number.isFinite(saved) && saved > 0) setDrawerWidth(saved, false);
+      else syncDrawerWidthControl(Math.min(window.innerWidth * 0.64, 980));
+    }
+
+    function resetDrawerWidth() {
+      localStorage.removeItem(DRAWER_WIDTH_KEY);
+      document.documentElement.style.removeProperty("--drawer-width");
+      syncDrawerWidthControl(Math.min(window.innerWidth * 0.64, 980));
+      showToast("Drawer width reset");
+    }
+
+    function beginDrawerResize(event) {
+      if (drawerResizeActive || window.innerWidth <= 760) return;
+      event.preventDefault();
+      drawerResizeActive = true;
+      document.body.classList.add("drawer-resizing");
+      const handle = event.currentTarget;
+      if (handle.setPointerCapture && event.pointerId !== undefined) {
+        try {
+          handle.setPointerCapture(event.pointerId);
+        } catch {
+          // Pointer capture is best effort; global listeners below are the fallback.
+        }
+      }
+      const resize = (moveEvent) => setDrawerWidth(window.innerWidth - moveEvent.clientX);
+      const stop = () => {
+        if (!drawerResizeActive) return;
+        if (handle.releasePointerCapture && event.pointerId !== undefined) {
+          try {
+            handle.releasePointerCapture(event.pointerId);
+          } catch {
+            // Already released or never captured.
+          }
+        }
+        drawerResizeActive = false;
+        document.body.classList.remove("drawer-resizing");
+        handle.removeEventListener("pointermove", resize, true);
+        handle.removeEventListener("pointerup", stop, true);
+        handle.removeEventListener("pointercancel", stop, true);
+        window.removeEventListener("pointermove", resize, true);
+        window.removeEventListener("mousemove", resize, true);
+        window.removeEventListener("pointerup", stop, true);
+        window.removeEventListener("mouseup", stop, true);
+        window.removeEventListener("pointercancel", stop, true);
+        window.removeEventListener("blur", stop, true);
+        document.removeEventListener("visibilitychange", stop);
+        document.removeEventListener("keydown", stopOnEscape, true);
+      };
+      const stopOnEscape = (keyEvent) => {
+        if (keyEvent.key === "Escape") stop();
+      };
+      window.addEventListener("pointermove", resize, true);
+      window.addEventListener("mousemove", resize, true);
+      window.addEventListener("pointerup", stop, true);
+      window.addEventListener("mouseup", stop, true);
+      window.addEventListener("pointercancel", stop, true);
+      handle.addEventListener("pointermove", resize, true);
+      handle.addEventListener("pointerup", stop, true);
+      handle.addEventListener("pointercancel", stop, true);
+      window.addEventListener("blur", stop, true);
+      document.addEventListener("visibilitychange", stop);
+      document.addEventListener("keydown", stopOnEscape, true);
+    }
+
+    function frameDocument() {
+      const frame = document.getElementById("appFrame");
+      try {
+        return frame.contentDocument || frame.contentWindow?.document || null;
+      } catch {
+        return null;
+      }
+    }
+
+    function setSelectionMode(active) {
+      if (active) setBoxSelectMode(false);
+      selectionMode = active;
+      document.getElementById("drawerSelect").classList.toggle("active", active);
+      document.getElementById("drawerSelect").textContent = active ? "Selecting..." : "Select Element";
+      const doc = frameDocument();
+      if (doc?.body) doc.body.classList.toggle("__qa_inspect_mode", active);
+      if (active) {
+        openAppDrawer();
+        attachFrameInspectionWhenReady();
+        if (doc) showToast("Select mode on: click a site element");
+        else showToast("This site cannot be inspected in-frame; use Capture + Annotate");
+      } else {
+        clearFrameHighlight();
+        showToast("Select mode off");
+      }
+    }
+
+    function toggleSelectionMode() {
+      setSelectionMode(!selectionMode);
+    }
+
+    function setBoxSelectMode(active) {
+      if (active) setSelectionMode(false);
+      boxSelectMode = active;
+      const button = document.getElementById("drawerBoxSelect");
+      const layer = document.getElementById("boxSelectLayer");
+      button.classList.toggle("active", active);
+      button.textContent = active ? "Box Selecting..." : "Box Select";
+      layer.classList.toggle("active", active);
+      if (!active) clearDraftBox();
+      else {
+        openAppDrawer();
+        showToast("Box select on: drag a region, then choose this tab/window to capture it");
+      }
+    }
+
+    function toggleBoxSelectMode() {
+      setBoxSelectMode(!boxSelectMode);
+    }
+
+    function layerPoint(event) {
+      const layer = document.getElementById("boxSelectLayer");
+      const rect = layer.getBoundingClientRect();
+      return {
+        x: Math.max(0, Math.min(event.clientX - rect.left, rect.width)),
+        y: Math.max(0, Math.min(event.clientY - rect.top, rect.height)),
+      };
+    }
+
+    function normalizeBox(start, end) {
+      return {
+        x: Math.round(Math.min(start.x, end.x)),
+        y: Math.round(Math.min(start.y, end.y)),
+        width: Math.round(Math.abs(end.x - start.x)),
+        height: Math.round(Math.abs(end.y - start.y)),
+      };
+    }
+
+    function boxViewportRect(rect) {
+      const layerRect = document.getElementById("boxSelectLayer").getBoundingClientRect();
+      return {
+        x: layerRect.left + rect.x,
+        y: layerRect.top + rect.y,
+        width: rect.width,
+        height: rect.height,
+      };
+    }
+
+    function clearDraftBox() {
+      boxDraftRect?.remove();
+      boxDraftRect = null;
+      boxDragStart = null;
+    }
+
+    function drawBoxElement(element, rect) {
+      element.style.left = `${rect.x}px`;
+      element.style.top = `${rect.y}px`;
+      element.style.width = `${rect.width}px`;
+      element.style.height = `${rect.height}px`;
+    }
+
+    function startBoxSelection(event) {
+      if (!boxSelectMode) return;
+      event.preventDefault();
+      boxDragStart = layerPoint(event);
+      const layer = document.getElementById("boxSelectLayer");
+      boxDraftRect = document.createElement("div");
+      boxDraftRect.className = "box-selection-rect";
+      layer.appendChild(boxDraftRect);
+      layer.setPointerCapture?.(event.pointerId);
+      drawBoxElement(boxDraftRect, { x: boxDragStart.x, y: boxDragStart.y, width: 1, height: 1 });
+    }
+
+    function moveBoxSelection(event) {
+      if (!boxSelectMode || !boxDragStart || !boxDraftRect) return;
+      event.preventDefault();
+      drawBoxElement(boxDraftRect, normalizeBox(boxDragStart, layerPoint(event)));
+    }
+
+    function finishBoxSelection(event) {
+      if (!boxSelectMode || !boxDragStart || !boxDraftRect) return;
+      event.preventDefault();
+      const rect = normalizeBox(boxDragStart, layerPoint(event));
+      clearDraftBox();
+      if (rect.width < 8 || rect.height < 8) {
+        showToast("Selection box was too small");
+        return;
+      }
+      const section = createSectionFromBox(rect);
+      if (section) {
+        void openAnnotationCapture(section.id, {
+          cropViewportRect: boxViewportRect(rect),
+          hideBoxLayerDuringCapture: true,
+          namePrefix: "box-selection",
+          note: "Captured from Box Select and annotated in the review board.",
+        });
+      }
+    }
+
+    function renderPersistentBoxSelections() {
+      const layer = document.getElementById("boxSelectLayer");
+      layer.querySelectorAll(".persistent-box-rect").forEach((node) => node.remove());
+      sections
+        .filter((section) => section.element?.source === "overlay-box-select" && section.element.rect)
+        .forEach((section) => {
+          const box = document.createElement("div");
+          box.className = "persistent-box-rect";
+          box.title = section.title;
+          drawBoxElement(box, section.element.rect);
+          layer.appendChild(box);
+        });
+    }
+
+    function attachFrameInspectionWhenReady() {
+      const frame = document.getElementById("appFrame");
+      frame.addEventListener("load", attachFrameInspection, { once: true });
+      setTimeout(attachFrameInspection, 250);
+    }
+
+    function attachFrameInspection() {
+      const doc = frameDocument();
+      if (!doc) {
+        if (selectionMode) showToast("Cannot inspect this framed site; browser security blocks it");
+        return;
+      }
+      if (doc.__qaInspectionAttached) return;
+      doc.__qaInspectionAttached = true;
+      const style = doc.createElement("style");
+      style.textContent = `
+        .__qa_inspect_hover {
+          outline: 3px solid #00ffd5 !important;
+          outline-offset: 2px !important;
+        }
+        .__qa_selected_element {
+          outline: 4px solid #00ff88 !important;
+          outline-offset: 3px !important;
+          box-shadow: 0 0 0 6px rgba(0, 255, 136, 0.22) !important;
+        }
+        body.__qa_inspect_mode, body.__qa_inspect_mode * {
+          cursor: crosshair !important;
+        }
+      `;
+      doc.head?.appendChild(style);
+      doc.addEventListener("mouseover", (event) => {
+        if (!selectionMode) return;
+        clearFrameHighlight();
+        highlightedElement = event.target;
+        highlightedElement.classList?.add("__qa_inspect_hover");
+      }, true);
+      doc.addEventListener("mouseout", () => {
+        if (!selectionMode) return;
+        clearFrameHighlight();
+      }, true);
+      doc.addEventListener("click", (event) => {
+        if (!selectionMode) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const element = event.target;
+        createSectionFromElement(describeElement(element), element);
+        clearFrameHighlight();
+      }, true);
+      if (selectionMode && doc.body) doc.body.classList.add("__qa_inspect_mode");
+    }
+
+    function clearFrameHighlight() {
+      highlightedElement?.classList?.remove("__qa_inspect_hover");
+      highlightedElement = null;
+    }
+
+    function keepSelectedElementHighlighted(element, sectionId) {
+      element.classList?.add("__qa_selected_element");
+      element.dataset.qaSectionId = sectionId;
+    }
+
+    function removeSelectedElementHighlight(section) {
+      const doc = frameDocument();
+      if (!doc || !section?.element?.selector) return;
+      try {
+        const element = doc.querySelector(section.element.selector);
+        if (!element) return;
+        element.classList.remove("__qa_selected_element");
+        if (element.dataset.qaSectionId === section.id) delete element.dataset.qaSectionId;
+      } catch {
+        // A stale selector should not block section removal.
+      }
+    }
+
+    function describeElement(element) {
+      const rect = element.getBoundingClientRect?.();
+      return {
+        source: "element-select",
+        url: appFrameUrl(),
+        tag: element.tagName?.toLowerCase() || "",
+        selector: cssPath(element),
+        label: (
+          element.getAttribute?.("aria-label")
+          || element.getAttribute?.("title")
+          || element.getAttribute?.("placeholder")
+          || ""
+        ).trim().slice(0, 160),
+        role: element.getAttribute?.("role") || "",
+        id: element.id || "",
+        classes: String(element.className || "").trim().split(/\s+/).filter(Boolean).slice(0, 12),
+        text: String(element.innerText || element.textContent || "").replace(/\s+/g, " ").trim().slice(0, 300),
+        rect: rect
+          ? {
+              x: Math.round(rect.x),
+              y: Math.round(rect.y),
+              width: Math.round(rect.width),
+              height: Math.round(rect.height),
+            }
+          : null,
+      };
+    }
+
+    function cssPath(element) {
+      const parts = [];
+      let node = element;
+      while (node && node.nodeType === 1 && node.tagName?.toLowerCase() !== "html") {
+        const tag = node.tagName.toLowerCase();
+        if (node.id) {
+          parts.unshift(`${tag}#${CSS.escape(node.id)}`);
+          break;
+        }
+        let index = 1;
+        let sibling = node;
+        while ((sibling = sibling.previousElementSibling)) {
+          if (sibling.tagName === node.tagName) index += 1;
+        }
+        parts.unshift(`${tag}:nth-of-type(${index})`);
+        node = node.parentElement;
+      }
+      return parts.join(" > ");
+    }
+
+    async function copyMarkdown() {
+      const markdown = buildMarkdown();
+      try {
+        await navigator.clipboard.writeText(markdown);
+      showToast("C.R.A.P. copied");
+      } catch {
+        const temp = document.createElement("textarea");
+        temp.value = markdown;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        temp.remove();
+        showToast("C.R.A.P. copied");
+      }
+    }
+
+    async function copyCursorPrompt() {
+      const prompt = document.getElementById("cursorPromptText").value;
+      if (!prompt.trim()) {
+        showToast("Save this C.R.A.P. first");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(prompt);
+        showToast("Cursor prompt copied");
+      } catch {
+        const temp = document.createElement("textarea");
+        temp.value = prompt;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        temp.remove();
+        showToast("Cursor prompt copied");
+      }
+    }
+
+    function downloadMarkdown() {
+      const markdown = buildMarkdown();
+      const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const date = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `app-element-review-results-${date}.md`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast("C.R.A.P. exported");
+    }
+
+    function resetForm() {
+      if (!confirm("Reset this C.R.A.P., notes, and saved text?")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      sections = [];
+      activeSectionId = null;
+      siteLocked = false;
+      renderPersistentBoxSelections();
+      document.querySelectorAll("[data-meta], [data-final]").forEach((input) => {
+        if (input.dataset.meta === "Site") input.value = DEFAULT_APP_URL;
+        else input.value = "";
+      });
+      applySiteLockState();
+      setCursorPrompt("");
+      renderSections();
+      showToast("Fresh C.R.A.P. ready");
+    }
+
+    document.addEventListener("paste", (event) => {
+      const items = Array.from(event.clipboardData?.items || []);
+      const imageItems = items.filter((item) => item.type.startsWith("image/"));
+      if (!imageItems.length) return;
+      if (!activeSectionId) {
+        showToast("Click a section screenshot box first");
+        return;
+      }
+      event.preventDefault();
+      imageItems.forEach((item) => {
+        const file = item.getAsFile();
+        if (file) addScreenshotFile(activeSectionId, file);
+      });
+    });
+
+    document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+    document.getElementById("saveReview").addEventListener("click", saveReviewFolder);
+    document.getElementById("openAppDrawer").addEventListener("click", () => openAppDrawer());
+    document.getElementById("siteLockButton").addEventListener("click", loadAndLockSite);
+    document.getElementById("siteInput").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        loadAndLockSite();
+      }
+    });
+    document.getElementById("addManualSection").addEventListener("click", createManualSection);
+    document.getElementById("drawerSelect").addEventListener("click", toggleSelectionMode);
+    document.getElementById("drawerBoxSelect").addEventListener("click", toggleBoxSelectMode);
+    document.getElementById("drawerClose").addEventListener("click", closeAppDrawer);
+    document.getElementById("drawerReload").addEventListener("click", reloadAppDrawer);
+    document.getElementById("drawerNewChat").addEventListener("click", openNewChatInDrawer);
+    document.getElementById("drawerPopout").addEventListener("click", popoutAppDrawer);
+    document.getElementById("drawerResetWidth").addEventListener("click", resetDrawerWidth);
+    document.getElementById("drawerWidthRange").addEventListener("input", (event) => setDrawerWidth(Number(event.target.value)));
+    document.getElementById("drawerResizeHandle").addEventListener("pointerdown", beginDrawerResize);
+    document.getElementById("boxSelectLayer").addEventListener("pointerdown", startBoxSelection);
+    document.getElementById("boxSelectLayer").addEventListener("pointermove", moveBoxSelection);
+    document.getElementById("boxSelectLayer").addEventListener("pointerup", finishBoxSelection);
+    document.getElementById("boxSelectLayer").addEventListener("pointercancel", clearDraftBox);
+    document.getElementById("annotateMove").addEventListener("click", () => setAnnotationMode("move"));
+    document.getElementById("annotateDraw").addEventListener("click", () => setAnnotationMode("draw"));
+    document.getElementById("annotateText").addEventListener("click", () => setAnnotationMode("text"));
+    document.getElementById("annotateRect").addEventListener("click", () => setAnnotationMode("rect"));
+    document.getElementById("annotateEllipse").addEventListener("click", () => setAnnotationMode("ellipse"));
+    document.getElementById("annotateArrow").addEventListener("click", () => setAnnotationMode("arrow"));
+    document.getElementById("annotateColor").addEventListener("input", updateSelectedAnnotationColor);
+    document.getElementById("annotateSize").addEventListener("input", updateSelectedAnnotationSize);
+    document.getElementById("annotateUndo").addEventListener("click", undoAnnotation);
+    document.getElementById("annotateDelete").addEventListener("click", deleteSelectedAnnotation);
+    document.getElementById("annotateClear").addEventListener("click", clearAnnotationMarks);
+    document.getElementById("annotateSave").addEventListener("click", saveAnnotatedScreenshot);
+    document.getElementById("annotateCancel").addEventListener("click", closeAnnotationModal);
+    document.getElementById("annotationCanvas").addEventListener("pointerdown", startAnnotationDraw);
+    document.getElementById("annotationCanvas").addEventListener("pointermove", moveAnnotationDraw);
+    document.getElementById("annotationCanvas").addEventListener("pointerup", stopAnnotationDraw);
+    document.getElementById("annotationCanvas").addEventListener("pointercancel", stopAnnotationDraw);
+    document.getElementById("copyMd").addEventListener("click", copyMarkdown);
+    document.getElementById("copyCursorPrompt").addEventListener("click", copyCursorPrompt);
+    document.getElementById("downloadMd").addEventListener("click", downloadMarkdown);
+    document.getElementById("printPage").addEventListener("click", () => window.print());
+    document.getElementById("resetForm").addEventListener("click", resetForm);
+    document.querySelectorAll("[data-meta], [data-final]").forEach((input) => {
+      input.addEventListener("input", saveState);
+      input.addEventListener("change", saveState);
+    });
+    document.getElementById("appFrame").addEventListener("load", attachFrameInspection);
+
+    loadTheme();
+    loadDrawerWidth();
+    loadState();
+    renderSections();
+    renderPersistentBoxSelections();
+  </script>
+</body>
+</html>
