@@ -34,8 +34,8 @@ Each review is meant to answer:
 
 1. Start the local server with `npm start`.
 2. Open `http://127.0.0.1:8088/`.
-3. Enter the site URL you want to inspect, usually another local app like `http://localhost:3000`.
-4. Click **Load / Lock**, then open the drawer.
+3. Enter the Reference Base URL you want to inspect, usually another local app like `http://localhost:3000`.
+4. Click **Lock and Load**, then open the drawer.
 5. Use **Select Element** when the browser allows same-origin inspection, or **Box Select** when it does not.
 6. Add notes and annotations for each captured section.
 7. Click **Save This C.R.A.P.**

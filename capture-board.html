@@ -1309,9 +1309,15 @@
         const body = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(body.message || `Status failed (${response.status})`);
         const enabled = Boolean(body.cursor_agent_enabled ?? (body.ai_report_enabled && body.cursor_sdk_configured && body.cursor_sdk_available !== false));
+        const status = String(body.cursor_agent_status || "").toLowerCase();
+        const label = enabled
+          ? "Cursor Agents: Enabled"
+          : status === "fallback"
+            ? "Cursor Agents: Fallback"
+            : "Cursor Agents: Not Ready";
         setCursorAgentStatus(
           enabled,
-          enabled ? "Cursor Agents: Enabled" : "Cursor Agents: Not Ready",
+          label,
           cursorStatusDetails(body),
         );
       } catch (error) {

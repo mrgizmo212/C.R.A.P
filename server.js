@@ -37,16 +37,17 @@ function cursorAgentStatus() {
   const sdkAvailable = cursorSdkAvailable();
   const configured = Boolean(config.cursorApiKey.trim());
   const enabled = Boolean(config.aiReportEnabled && configured && sdkAvailable);
-  let reason = "Cursor SDK reports are configured";
+  const status = enabled ? "enabled" : config.aiReportEnabled ? "fallback" : "disabled";
+  let reason = "Cursor SDK reports are configured and ready";
   if (!config.aiReportEnabled) reason = "AI report generation is disabled";
-  else if (!configured) reason = "CURSOR_API_KEY is not configured";
-  else if (!sdkAvailable) reason = "@cursor/sdk is not installed";
+  else if (!configured) reason = "CURSOR_API_KEY is not configured; using fallback report mode";
+  else if (!sdkAvailable) reason = "@cursor/sdk is not installed; using fallback report mode";
   return {
     ai_report_enabled: config.aiReportEnabled,
     cursor_sdk_configured: configured,
     cursor_sdk_available: sdkAvailable,
     cursor_agent_enabled: enabled,
-    cursor_agent_status: enabled ? "enabled" : "disabled",
+    cursor_agent_status: status,
     cursor_agent_reason: reason,
     cursor_model: config.cursorModel,
   };
