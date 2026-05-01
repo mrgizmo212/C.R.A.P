@@ -1183,8 +1183,15 @@
     const STORAGE_KEY = "codebase-review-action-planner-v1";
     const DRAWER_WIDTH_KEY = "crap-drawer-width-v1";
     const THEME_KEY = "crap-theme-v1";
-    const ARTIFACT_TOKEN = localStorage.getItem("crap-review-token-v1") || "";
-    const DEFAULT_APP_URL = "http://localhost:3000";
+    const CRAP_CONFIG = Object.freeze(window.CRAP_CONFIG || {});
+    const ARTIFACT_TOKEN = String(
+      CRAP_CONFIG.reviewToken ?? window.CRAP_REVIEW_TOKEN ?? localStorage.getItem("crap-review-token-v1") ?? "",
+    );
+    const DEFAULT_APP_URL = String(
+      CRAP_CONFIG.defaultAppUrl ?? window.CRAP_DEFAULT_APP_URL ?? "http://localhost:3000",
+    );
+    const SAVE_ENDPOINT = String(CRAP_CONFIG.saveEndpoint ?? window.CRAP_SAVE_ENDPOINT ?? "/api/reviews");
+    const SAVE_AUTH_TOKEN = String(CRAP_CONFIG.authToken ?? window.CRAP_AUTH_TOKEN ?? "");
     const MAX_SCREENSHOTS_PER_SECTION = 4;
 
     let sections = [];
@@ -2282,6 +2289,12 @@
       panel.classList.toggle("open", Boolean(value));
     }
 
+    function saveRequestHeaders() {
+      const headers = { "Content-Type": "application/json" };
+      if (SAVE_AUTH_TOKEN) headers.Authorization = `Bearer ${SAVE_AUTH_TOKEN}`;
+      return headers;
+    }
+
     async function saveReviewFolder() {
       if (!sections.length) {
         const ok = confirm("No selected elements have been captured yet. Save an empty review folder?");
@@ -2297,9 +2310,9 @@
       button.disabled = true;
       status.textContent = "Saving this C.R.A.P....";
       try {
-        const response = await fetch("/api/reviews", {
+        const response = await fetch(SAVE_ENDPOINT, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: saveRequestHeaders(),
           body: JSON.stringify(buildReviewPayload()),
         });
         const body = await response.json().catch(() => ({}));

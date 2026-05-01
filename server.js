@@ -470,6 +470,7 @@ async function saveReview(submission) {
     if (aiReport.error) response.ai_report_error = aiReport.error;
     if (aiReport.run_id) response.ai_report_run_id = aiReport.run_id;
     if (aiReport.model) response.ai_report_model = aiReport.model;
+    if (aiReport.image_mode) response.ai_report_image_mode = aiReport.image_mode;
   }
   return response;
 }
@@ -619,6 +620,19 @@ async function markdownFromRun(run, result) {
   }
 }
 
+async function sendAndExtractMarkdown(agent, message) {
+  const run = await agent.send(message);
+  const result = await run.wait();
+  if (result?.status && result.status !== "finished") {
+    return { markdown: "", result, status: result.status };
+  }
+  return {
+    markdown: await markdownFromRun(run, result),
+    result,
+    status: result?.status || "unknown",
+  };
+}
+
 async function cursorReport(folder, payload) {
   if (!config.cursorApiKey.trim()) {
     return {
@@ -671,14 +685,25 @@ async function cursorReport(folder, payload) {
       model: { id: config.cursorModel },
       local: { cwd: ROOT },
     });
-    const run = await agent.send(images.length ? { text: prompt, images } : prompt);
-    const result = await run.wait();
-    const markdown = await markdownFromRun(run, result);
+    let imageMode = images.length ? "attached" : "none";
+    let attempt = await sendAndExtractMarkdown(agent, images.length ? { text: prompt, images } : prompt);
+    if (!attempt.markdown && images.length) {
+      imageMode = "text-only-retry";
+      attempt = await sendAndExtractMarkdown(
+        agent,
+        [
+          prompt,
+          "",
+          "Note: The current Cursor SDK local image attachment path did not return assistant text for this run. Use the screenshot file paths, screenshot notes, selected element metadata, and reviewer comments in the evidence above to write the report.",
+        ].join("\n"),
+      );
+    }
+    const { markdown, result, status } = attempt;
     if (!markdown) {
       return {
         mode: "fallback",
-        markdown: fallbackReport(payload, "Cursor SDK returned an empty result"),
-        error: "Cursor SDK returned an empty result",
+        markdown: fallbackReport(payload, `Cursor SDK returned an empty result${status ? ` (status=${status})` : ""}`),
+        error: `Cursor SDK returned an empty result${status ? ` (status=${status})` : ""}`,
       };
     }
     return {
@@ -688,6 +713,7 @@ async function cursorReport(folder, payload) {
       run_id: result.id,
       model: result.model || null,
       duration_ms: result.durationMs || null,
+      image_mode: imageMode,
     };
   } catch (error) {
     const summary = [error?.name, error?.message, error?.code ? `code=${error.code}` : "", error?.status ? `status=${error.status}` : ""]
