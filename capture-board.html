@@ -1070,7 +1070,7 @@
         </div>
       </div>
       <ol class="intro-steps">
-        <li>Enter a local or reachable site URL and click Load / Lock.</li>
+        <li>Enter a local or reachable site URL and click Lock and Load.</li>
         <li>Use Select Element when same-origin inspection works, or Box Select when it does not.</li>
         <li>Add notes and annotated screenshots, then click Save This C.R.A.P.</li>
       </ol>
@@ -1101,7 +1101,7 @@
           Site
           <span class="site-lock-row">
             <input data-meta="Site" id="siteInput" type="text" value="http://localhost:3000" placeholder="https://example.com" />
-            <button type="button" id="siteLockButton">Load / Lock</button>
+            <button type="button" id="siteLockButton">Lock and Load</button>
           </span>
         </label>
       </div>
@@ -1268,7 +1268,7 @@
       const input = document.getElementById("siteInput");
       const button = document.getElementById("siteLockButton");
       input.disabled = siteLocked;
-      button.textContent = siteLocked ? "Change Site" : "Load / Lock";
+      button.textContent = siteLocked ? "Change Site" : "Lock and Load";
       button.classList.toggle("active", siteLocked);
     }
 
