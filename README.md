@@ -8,7 +8,7 @@
 
 **Powered by Cursor SDK**
 
-[Watch the C.R.A.P. demo](assets/crapVideo.mp4)
+[Watch the C.R.A.P. demo](assets/crapVideoOpt.mp4)
 
 </div>
 
